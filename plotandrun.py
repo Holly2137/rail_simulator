@@ -8,9 +8,10 @@ from datetime import datetime
 import contextily as ctx
 
 
+
 # Load shapefiles
-railline = gpd.read_file(r'C:\Users\Holly\Desktop\Intro to Coding\Shapefiles\Sligo_Dublin_Line.shp')
-stations = gpd.read_file(r'C:\Users\Holly\Desktop\Intro to Coding\Shapefiles\Sligo_Dublin_Stops2.shp')
+railline = gpd.read_file(r'shapefiles\Sligo_Dublin_Line.shp')
+stations = gpd.read_file(r'shapefiles\Sligo_Dublin_Stops2.shp')
 
 # Reproject to EPSG:3857 if necessary
 if railline.crs.to_string() != "EPSG:3857":
@@ -49,7 +50,7 @@ stations["distance_along_track"] = stations.geometry.apply(lambda point: track.p
 stations = stations.sort_values(by="distance_along_track")
 
 # Load timetable data
-timetable_csv = "SligoDublinTimetableMerged02.csv"
+timetable_csv = r'rawdata\SligoDublinTimetableMerged02.csv'
 timetable_df = pd.read_csv(timetable_csv)
 
 # Convert time to seconds
