@@ -119,22 +119,37 @@ plt.subplots_adjust(bottom=0.15)  # Add space for slider
 railline.plot(ax=ax, color='red', label='Rail Line')
 stations.plot(ax=ax, color='green', marker='o', zorder=3, markersize=10, label='Stations')
 
+passing_points = ["Killucan", "Carrick loop"]
+
+for point in passing_points:
+    if point in station_mileposts:
+        milepost = station_mileposts[point]
+        ratio = (milepost - min_milepost) / (max_milepost - min_milepost)
+        geom = track.interpolate(ratio * track.length)
+
+        # Plot yellow dot
+        ax.plot(geom.x, geom.y, 'o', color='yellow', markersize=3, zorder=4, label="Passing Point" if point == passing_points[0] else "")
+
+        # Optional: label it
+        ax.text(geom.x, geom.y, point, fontsize=7, ha='right', color='darkgoldenrod')
+
+
 # Add station labels for verification
 for idx, row in stations.iterrows():
     label = f"{row['StopName']}\n{row['milepost']}m"
-    ax.text(row.geometry.x, row.geometry.y, label, fontsize=7, ha='right', color='black')
+    ax.text(row.geometry.x, row.geometry.y, label, fontsize=7, ha='right', color='darkgoldenrod')
 
 # Add a basemap
 ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
 
 
 # Add slider for SPEED_FACTOR
-ax_slider = plt.axes([0.2, 0.02, 0.6, 0.03])  # [left, bottom, width, height]
+ax_slider = plt.axes([0.4, 0.02, 0.2, 0.05])  # [left, bottom, width, height]
 speed_slider = Slider(
     ax_slider,
     'Speed Factor',
     valmin=1,
-    valmax=50,
+    valmax=10,
     valinit=5,
     valstep=1,
 )
@@ -184,13 +199,15 @@ total_simulation_seconds = end_time - start_time
 # FRAMES = total_simulation_seconds // FRAME_STEP  # Total number of frames
 # INTERVAL = 20  # Delay between frames in milliseconds
 
-FRAME_STEP = 10  # constant base time step
+FRAME_STEP = 5  # constant base time step
 FRAMES = 12000  # Or however long you want the loop to run
 
 
-SPEED_FACTOR = speed_slider.val
+#SPEED_FACTOR = speed_slider.val
 # FRAME_STEP = 10 * SPEED_FACTOR
-INTERVAL = max(1, int(1000 / SPEED_FACTOR))
+INTERVAL = 15  # Fast and smooth frame rendering
+
+#INTERVAL = max(1, int(1000 / SPEED_FACTOR))
 # FRAMES = 1000  # or: int(total_simulation_seconds // FRAME_STEP)
 
 
@@ -272,18 +289,18 @@ plt.legend()
 plt.show()
 
 
-# Inspect full stop list and times for Train 223
-train_223 = timetable_df[timetable_df['ID'] == 223].sort_values("Departs_s")
-print("\n🚂 Train 223 timetable:")
-print(train_223[["Station", "Departs_s"]])
+# # Inspect full stop list and times for Train 223
+# train_223 = timetable_df[timetable_df['ID'] == 223].sort_values("Departs_s")
+# print("\n🚂 Train 223 timetable:")
+# print(train_223[["Station", "Departs_s"]])
 
 
-print("\n🛠 Stations with mileposts:")
-print(sorted(station_mileposts.keys()))
+# print("\n🛠 Stations with mileposts:")
+# print(sorted(station_mileposts.keys()))
 
-raw_223 = pd.read_excel(TIMETABLE_FILE)
-print("\n📋 Raw entries for Train 223:")
-print(raw_223[raw_223["ID"] == 223][["Station", "Depart time"]])
+# raw_223 = pd.read_excel(TIMETABLE_FILE)
+# print("\n📋 Raw entries for Train 223:")
+# print(raw_223[raw_223["ID"] == 223][["Station", "Depart time"]])
 
 
 
