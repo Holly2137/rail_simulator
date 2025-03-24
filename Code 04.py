@@ -3,7 +3,9 @@ import geopandas as gpd
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 from matplotlib.animation import FuncAnimation
+from matplotlib.widgets import Slider
 from shapely.geometry import LineString
 from shapely.ops import substring
 from datetime import datetime
@@ -47,35 +49,57 @@ if railline.geometry.iloc[0].geom_type == 'MultiLineString':
     track = railline.geometry.iloc[0].unary_union
 else:
     track = railline.geometry.iloc[0]
+    
+# ✅ Auto-fix track direction: Connolly should be milepost 0, Sligo high
+sligo_geom = stations.loc[stations["StopName"] == "Sligo", "geometry"].values[0]
+dublin_geom = stations.loc[stations["StopName"] == "Connolly", "geometry"].values[0]
 
-# Use existing milepost columns from segments
+sligo_pos = track.project(sligo_geom)
+dublin_pos = track.project(dublin_geom)
+
+print(f"Projected: Connolly={dublin_pos:.2f}, Sligo={sligo_pos:.2f}")
+
+if sligo_pos < dublin_pos:
+    track = LineString(list(track.coords)[::-1])
+    print("🔁 Track reversed to match milepost direction")
+
+# Confirm direction
+sligo_pos = track.project(sligo_geom)
+dublin_pos = track.project(dublin_geom)
+print(f"After reverse: Connolly={dublin_pos:.2f}, Sligo={sligo_pos:.2f}")
+
+
+# 🚩 Interpolate accurate geometry using milepost data from Segments
 segments_df["From_milepost"] = segments_df["From Milepost"]
 segments_df["To_milepost"] = segments_df["To Milepost"]
 
-# Compute station mileposts from segments
+# Build milepost lookup
 station_mileposts = pd.concat([
-    segments_df[['From', 'From_milepost']].rename(columns={'From': 'Station', 'From_milepost': 'Milepost'}),
-    segments_df[['To', 'To_milepost']].rename(columns={'To': 'Station', 'To_milepost': 'Milepost'})
-]).dropna().drop_duplicates(subset='Station').set_index('Station')['Milepost'].to_dict()
+    segments_df[['From', 'From_milepost']].rename(columns={'From': 'StopName', 'From_milepost': 'Milepost'}),
+    segments_df[['To', 'To_milepost']].rename(columns={'To': 'StopName', 'To_milepost': 'Milepost'})
+]).dropna().drop_duplicates(subset='StopName').set_index('StopName')['Milepost'].to_dict()
 
-# Map mileposts to station geometries
+# Assign mileposts to station geometries
 stations["milepost"] = stations["StopName"].map(station_mileposts)
 
-# Interpolation mapper: map milepost to geometry along the track
+# Normalize mileposts and interpolate onto the track
 min_milepost = stations["milepost"].min()
 max_milepost = stations["milepost"].max()
+stations["milepost_ratio"] = stations["milepost"].apply(lambda m: (m - min_milepost) / (max_milepost - min_milepost) if pd.notnull(m) else np.nan)
+stations["geometry"] = stations["milepost_ratio"].apply(lambda r: track.interpolate(r * track.length) if pd.notnull(r) else None)
 
-# Normalize mileposts to range 0.0 - 1.0 and interpolate geometry
-stations["milepost_position"] = stations["milepost"].apply(lambda m: (m - min_milepost) / (max_milepost - min_milepost) if pd.notnull(m) else np.nan)
-stations["geometry"] = stations["milepost_position"].apply(lambda ratio: track.interpolate(ratio * track.length) if pd.notnull(ratio) else None)
+
+
 
 # Convert departure time to seconds since midnight
 def time_to_seconds(tstr):
-    try:
-        t = datetime.strptime(tstr, "%H:%M")
-        return t.hour * 3600 + t.minute * 60
-    except:
-        return np.nan
+    for fmt in ("%H:%M", "%H:%M:%S"):
+        try:
+            t = datetime.strptime(str(tstr).strip(), fmt)
+            return t.hour * 3600 + t.minute * 60 + t.second
+        except:
+            continue
+    return np.nan
 
 timetable_df["Departs_s"] = timetable_df["Depart time"].apply(time_to_seconds)
 
@@ -89,36 +113,32 @@ timetable_df = timetable_df[timetable_df["Station"].isin(station_mileposts.keys(
 
 # Create a shared plot
 fig, ax = plt.subplots(figsize=(10, 10))
+plt.subplots_adjust(bottom=0.15)  # Add space for slider
 
 # Plot the rail lines and stations
 railline.plot(ax=ax, color='red', label='Rail Line')
 stations.plot(ax=ax, color='green', marker='o', zorder=3, markersize=10, label='Stations')
 
-# # Add station labels for verification
-# for idx, row in stations.iterrows():
-#     label = f"{row['StopName']}\n{row['milepost']}m"
-#     ax.text(row.geometry.x, row.geometry.y, label, fontsize=7, ha='right', color='black')
+# Add station labels for verification
+for idx, row in stations.iterrows():
+    label = f"{row['StopName']}\n{row['milepost']}m"
+    ax.text(row.geometry.x, row.geometry.y, label, fontsize=7, ha='right', color='black')
 
 # Add a basemap
 ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
 
-# # Visual test: plot segments as true rail geometry using shapely substring
-# for _, row in segments_df.iterrows():
-#     from_mile = row["From_milepost"]
-#     to_mile = row["To_milepost"]
 
-#     if pd.notnull(from_mile) and pd.notnull(to_mile):
-#         start_ratio = (from_mile - min_milepost) / (max_milepost - min_milepost)
-#         end_ratio = (to_mile - min_milepost) / (max_milepost - min_milepost)
+# Add slider for SPEED_FACTOR
+ax_slider = plt.axes([0.2, 0.02, 0.6, 0.03])  # [left, bottom, width, height]
+speed_slider = Slider(
+    ax_slider,
+    'Speed Factor',
+    valmin=1,
+    valmax=50,
+    valinit=5,
+    valstep=1,
+)
 
-#         start_distance = start_ratio * track.length
-#         end_distance = end_ratio * track.length
-
-#         segment_geom = substring(track, start_distance, end_distance)
-#         x, y = segment_geom.xy
-#         ax.plot(x, y, color='blue', linewidth=2, alpha=0.7)
-
-# plt.show()
 
 
 # Create train markers and store their data
@@ -156,27 +176,51 @@ clock_text = ax.text(
 )
 
 # Define animation parameters
-start_time = 18000  # 05:00 AM in seconds
-end_time = 83500    # 11:12 PM in seconds
+start_time = timetable_df["Departs_s"].min() - 2000  #  buffer
+end_time = timetable_df["Departs_s"].max() + 3000  #  buffer
+#end_time = 83500    # 11:12 PM in seconds#18000  # 05:00 AM in seconds
 total_simulation_seconds = end_time - start_time
-FRAME_STEP = 30  # Simulate 30 seconds per frame
-FRAMES = total_simulation_seconds // FRAME_STEP  # Total number of frames
-INTERVAL = 100  # Delay between frames in milliseconds
+# FRAME_STEP = 10  # Simulate 30 seconds per frame
+# FRAMES = total_simulation_seconds // FRAME_STEP  # Total number of frames
+# INTERVAL = 20  # Delay between frames in milliseconds
 
-print(f"Start Time: {start_time} (05:00 AM)")
-print(f"End Time: {end_time} (11:12 PM)")
-print(f"Total Simulation Seconds: {total_simulation_seconds}")
+FRAME_STEP = 10  # constant base time step
+FRAMES = 12000  # Or however long you want the loop to run
+
+
+SPEED_FACTOR = speed_slider.val
+# FRAME_STEP = 10 * SPEED_FACTOR
+INTERVAL = max(1, int(1000 / SPEED_FACTOR))
+# FRAMES = 1000  # or: int(total_simulation_seconds // FRAME_STEP)
+
 
 # # Debugging: Print simulation parameters
 # print(f"Start Time: {start_time} (05:00 AM)")
 # print(f"End Time: {end_time} (11:12 PM)")
 # print(f"Total Simulation Seconds: {total_simulation_seconds}")
 
-# Animation function
+
+sim_time = start_time
+
+# # Animation function
+# def animate_trains(frame):
+#     # Calculate the current simulation time
+#     global sim_time
+#     SPEED_FACTOR = speed_slider.val
+#     sim_range = end_time - start_time
+#     t = start_time + (frame * FRAME_STEP * SPEED_FACTOR) % sim_range
+    
+
 def animate_trains(frame):
-    # Calculate the current simulation time
-    t = start_time + frame * FRAME_STEP  # Simulated time in seconds
-    print(f"Frame: {frame}, Time: {t}")  # Debug: Print the current frame and time
+    global sim_time
+    SPEED_FACTOR = speed_slider.val
+    sim_time += FRAME_STEP * SPEED_FACTOR  # ✅ Accumulate time forward
+    t = (sim_time - start_time) % (end_time - start_time) + start_time
+
+
+
+    # t = start_time + frame * FRAME_STEP  # Simulated time in seconds
+    # print(f"Frame: {frame}, Time: {t}")  # Debug: Print the current frame and time
 
     # Clear the previous train positions
     for train_id, data in train_dots.items():
@@ -201,9 +245,15 @@ def animate_trains(frame):
 
         # Update the train marker position
         data['dot'].set_data([pt.x], [pt.y])  # Pass as lists
+        
+        
+
 
     # Update the clock
     clock_text.set_text(f"Time: {datetime.utcfromtimestamp(t).strftime('%H:%M')}")
+   
+    if frame == 0:
+        ax.legend(loc='upper right')  # or your preferred position
 
     # Return the artists to update
     return [data['dot'] for data in train_dots.values()] + [clock_text]
@@ -222,11 +272,18 @@ plt.legend()
 plt.show()
 
 
+# Inspect full stop list and times for Train 223
+train_223 = timetable_df[timetable_df['ID'] == 223].sort_values("Departs_s")
+print("\n🚂 Train 223 timetable:")
+print(train_223[["Station", "Departs_s"]])
 
 
+print("\n🛠 Stations with mileposts:")
+print(sorted(station_mileposts.keys()))
 
-
-
+raw_223 = pd.read_excel(TIMETABLE_FILE)
+print("\n📋 Raw entries for Train 223:")
+print(raw_223[raw_223["ID"] == 223][["Station", "Depart time"]])
 
 
 

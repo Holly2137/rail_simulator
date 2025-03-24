@@ -47,27 +47,47 @@ if railline.geometry.iloc[0].geom_type == 'MultiLineString':
     track = railline.geometry.iloc[0].unary_union
 else:
     track = railline.geometry.iloc[0]
+    
+# ✅ Auto-fix track direction: Connolly should be milepost 0, Sligo high
+sligo_geom = stations.loc[stations["StopName"] == "Sligo", "geometry"].values[0]
+dublin_geom = stations.loc[stations["StopName"] == "Connolly", "geometry"].values[0]
 
-# Use existing milepost columns from segments
+sligo_pos = track.project(sligo_geom)
+dublin_pos = track.project(dublin_geom)
+
+print(f"Projected: Connolly={dublin_pos:.2f}, Sligo={sligo_pos:.2f}")
+
+if sligo_pos < dublin_pos:
+    track = LineString(list(track.coords)[::-1])
+    print("🔁 Track reversed to match milepost direction")
+
+# Confirm direction
+sligo_pos = track.project(sligo_geom)
+dublin_pos = track.project(dublin_geom)
+print(f"After reverse: Connolly={dublin_pos:.2f}, Sligo={sligo_pos:.2f}")
+
+
+# 🚩 Interpolate accurate geometry using milepost data from Segments
 segments_df["From_milepost"] = segments_df["From Milepost"]
 segments_df["To_milepost"] = segments_df["To Milepost"]
 
-# Compute station mileposts from segments
+# Build milepost lookup
 station_mileposts = pd.concat([
-    segments_df[['From', 'From_milepost']].rename(columns={'From': 'Station', 'From_milepost': 'Milepost'}),
-    segments_df[['To', 'To_milepost']].rename(columns={'To': 'Station', 'To_milepost': 'Milepost'})
-]).dropna().drop_duplicates(subset='Station').set_index('Station')['Milepost'].to_dict()
+    segments_df[['From', 'From_milepost']].rename(columns={'From': 'StopName', 'From_milepost': 'Milepost'}),
+    segments_df[['To', 'To_milepost']].rename(columns={'To': 'StopName', 'To_milepost': 'Milepost'})
+]).dropna().drop_duplicates(subset='StopName').set_index('StopName')['Milepost'].to_dict()
 
-# Map mileposts to station geometries
+# Assign mileposts to station geometries
 stations["milepost"] = stations["StopName"].map(station_mileposts)
 
-# Interpolation mapper: map milepost to geometry along the track
+# Normalize mileposts and interpolate onto the track
 min_milepost = stations["milepost"].min()
 max_milepost = stations["milepost"].max()
+stations["milepost_ratio"] = stations["milepost"].apply(lambda m: (m - min_milepost) / (max_milepost - min_milepost) if pd.notnull(m) else np.nan)
+stations["geometry"] = stations["milepost_ratio"].apply(lambda r: track.interpolate(r * track.length) if pd.notnull(r) else None)
 
-# Normalize mileposts to range 0.0 - 1.0 and interpolate geometry
-stations["milepost_position"] = stations["milepost"].apply(lambda m: (m - min_milepost) / (max_milepost - min_milepost) if pd.notnull(m) else np.nan)
-stations["geometry"] = stations["milepost_position"].apply(lambda ratio: track.interpolate(ratio * track.length) if pd.notnull(ratio) else None)
+
+
 
 # Convert departure time to seconds since midnight
 def time_to_seconds(tstr):
@@ -82,6 +102,9 @@ timetable_df["Departs_s"] = timetable_df["Depart time"].apply(time_to_seconds)
 # Clean and validate timetable
 timetable_df["Station"] = timetable_df["Station"].str.strip()
 timetable_df = timetable_df.dropna(subset=["Station", "Departs_s"])
+timetable_df = timetable_df[timetable_df["Station"].isin(station_mileposts.keys())]
+
+# Filter to known station list
 timetable_df = timetable_df[timetable_df["Station"].isin(station_mileposts.keys())]
 
 # Create a shared plot
@@ -99,78 +122,136 @@ for idx, row in stations.iterrows():
 # Add a basemap
 ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
 
-# Visual test: plot segments as true rail geometry using shapely substring
-for _, row in segments_df.iterrows():
-    from_mile = row["From_milepost"]
-    to_mile = row["To_milepost"]
+# # Visual test: plot segments as true rail geometry using shapely substring
+# for _, row in segments_df.iterrows():
+#     from_mile = row["From_milepost"]
+#     to_mile = row["To_milepost"]
 
-    if pd.notnull(from_mile) and pd.notnull(to_mile):
-        start_ratio = (from_mile - min_milepost) / (max_milepost - min_milepost)
-        end_ratio = (to_mile - min_milepost) / (max_milepost - min_milepost)
+#     if pd.notnull(from_mile) and pd.notnull(to_mile):
+#         start_ratio = (from_mile - min_milepost) / (max_milepost - min_milepost)
+#         end_ratio = (to_mile - min_milepost) / (max_milepost - min_milepost)
 
-        start_distance = start_ratio * track.length
-        end_distance = end_ratio * track.length
+#         start_distance = start_ratio * track.length
+#         end_distance = end_ratio * track.length
 
-        segment_geom = substring(track, start_distance, end_distance)
-        x, y = segment_geom.xy
-        ax.plot(x, y, color='blue', linewidth=2, alpha=0.7)
+#         segment_geom = substring(track, start_distance, end_distance)
+#         x, y = segment_geom.xy
+#         ax.plot(x, y, color='blue', linewidth=2, alpha=0.7)
 
-# 🚆 Animate trains
+
+# # Print stations and their mileposts
+# print("\nStation Mileposts:")
+# for station, milepost in sorted(station_mileposts.items(), key=lambda x: x[1]):
+#     print(f"{station}: {milepost}m")
+
+
+
+
+# Create train markers and store their data
 train_ids = timetable_df['ID'].unique()
-train_dots = {}
+train_dots = {}  # Dictionary to store train markers and their data
 
 for train_id in train_ids:
+    # Filter timetable data for this train
     train_data = timetable_df[timetable_df['ID'] == train_id].sort_values("Departs_s")
+    
+    # Get mileposts and times for this train
     mileposts = train_data["Station"].map(station_mileposts)
+    times = train_data["Departs_s"].values
+    
+    # Calculate positions along the track
     ratios = (mileposts - min_milepost) / (max_milepost - min_milepost)
     positions = ratios * track.length
-    times = train_data["Departs_s"].values
-
-    if len(times) < 2:
-        continue
-
-    dot, = ax.plot([], [], 'o', label=f"Train {train_id}", markersize=6)
+    
+    # Create a dot for this train
+    dot, = ax.plot([], [], 'o', markersize=6, label=f"Train {train_id}")
+    
+    # Store the train's data
     train_dots[train_id] = {
-        'dot': dot,
-        'positions': positions.values,
-        'times': times
+        'dot': dot,  # The train marker
+        'positions': positions.values,  # Positions along the track
+        'times': times  # Departure times
     }
 
-max_time = timetable_df["Departs_s"].max()
+# Add a clock to display the current simulation time
+clock_text = ax.text(
+    0.5, 0.95, "Time: 00:00",  # Position and initial text
+    transform=ax.transAxes,  # Use axes coordinates
+    ha='center', fontsize=12,  # Text alignment and size
+    bbox=dict(facecolor='white', alpha=0.7)  # Background box
+)
 
-clock_text = ax.text(0.5, 0.95, "Time: 00:00", transform=ax.transAxes, ha='center', fontsize=12, verticalalignment='top', bbox=dict(facecolor='white', alpha=0.7))
+# Define animation parameters
+start_time = 18000  # 05:00 AM in seconds
+end_time = 83500    # 11:12 PM in seconds
+total_simulation_seconds = end_time - start_time
+# FRAME_STEP = 10  # Simulate 30 seconds per frame
+# FRAMES = total_simulation_seconds // FRAME_STEP  # Total number of frames
+# INTERVAL = 20  # Delay between frames in milliseconds
 
-FRAMES = 1000
-INTERVAL = 20
+SPEED_FACTOR = 10
+FRAME_STEP = 10 * SPEED_FACTOR
+INTERVAL = max(1, int(1000 / SPEED_FACTOR))
+FRAMES = 1000  # or: int(total_simulation_seconds // FRAME_STEP)
 
-def update(frame):
-    t = frame * (max_time / FRAMES)
-    artists = []
 
+
+
+# # Debugging: Print simulation parameters
+# print(f"Start Time: {start_time} (05:00 AM)")
+# print(f"End Time: {end_time} (11:12 PM)")
+# print(f"Total Simulation Seconds: {total_simulation_seconds}")
+
+# Animation function
+def animate_trains(frame):
+    # Calculate the current simulation time
+    t = start_time + frame * FRAME_STEP  # Simulated time in seconds
+    print(f"Frame: {frame}, Time: {t}")  # Debug: Print the current frame and time
+
+    # Clear the previous train positions
+    for train_id, data in train_dots.items():
+        data['dot'].set_data([], [])  # Clear the train marker
+
+    # Update train positions
     for train_id, data in train_dots.items():
         times = data['times']
         pos = data['positions']
 
+        # Find the segment of the schedule the train is currently on
         idx = np.searchsorted(times, t, side='right') - 1
         if idx < 0 or idx >= len(pos) - 1:
-            continue
+            continue  # Skip if the train is not active at this time
 
-        t0, t1 = times[idx], times[idx+1]
-        p0, p1 = pos[idx], pos[idx+1]
+        # Interpolate the train's position
+        t0, t1 = times[idx], times[idx + 1]
+        p0, p1 = pos[idx], pos[idx + 1]
         alpha = (t - t0) / (t1 - t0) if t1 > t0 else 0
         dist = (1 - alpha) * p0 + alpha * p1
         pt = track.interpolate(dist)
 
-        data['dot'].set_data(pt.x, pt.y)
-        artists.append(data['dot'])
+        # Update the train marker position
+        data['dot'].set_data([pt.x], [pt.y])  # Pass as lists
 
+    # Update the clock
     clock_text.set_text(f"Time: {datetime.utcfromtimestamp(t).strftime('%H:%M')}")
-    artists.append(clock_text)
-    return artists
 
-ani = FuncAnimation(fig, update, frames=FRAMES, interval=INTERVAL, blit=True)
+    # Return the artists to update
+    return [data['dot'] for data in train_dots.values()] + [clock_text]
+
+# Create the animation
+ani = FuncAnimation(
+    fig,  # The figure to animate
+    animate_trains,  # The update function
+    frames=FRAMES,  # Total number of frames
+    interval=INTERVAL,  # Delay between frames in milliseconds
+    blit=True  # Optimize animation by only redrawing changed parts
+)
+
+# Show the plot
 plt.legend()
 plt.show()
+
+
 
 
 
