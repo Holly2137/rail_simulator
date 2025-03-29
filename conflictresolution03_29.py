@@ -142,30 +142,6 @@ speed_slider = Slider(ax_slider, 'Speed Factor', valmin=1, valmax=10, valinit=3,
 
 clock_text = ax.text(0.5, 0.95, "Time: 00:00", transform=ax.transAxes, ha='center', fontsize=12, bbox=dict(facecolor='white', alpha=0.7))
 
-
-
-
-# # Add pause button
-# ax_pause = plt.axes([0.15, 0.02, 0.1, 0.05])  # [left, bottom, width, height]
-# pause_button = plt.Button(ax_pause, 'Pause', color='lightgoldenrodyellow', hovercolor='0.975')
-
-# # Global pause state
-# is_paused = False
-
-# # Pause button callback
-# def pause(event):
-#     global is_paused
-#     is_paused = not is_paused
-#     pause_button.label.set_text('Resume' if is_paused else 'Pause')
-#     fig.canvas.draw_idle()
-
-# pause_button.on_clicked(pause)
-
-
-
-
-
-
 train_ids = timetable_df['ID'].unique()
 train_dots = {}
 
@@ -204,137 +180,164 @@ INTERVAL = 15
 sim_time = start_time
 
 
-def animate_trains(frame):
-    global sim_time
-    SPEED_FACTOR = speed_slider.val
-    sim_time += FRAME_STEP * SPEED_FACTOR
-    t = (sim_time - start_time) % (end_time - start_time) + start_time
 
-    updated_artists = []
 
-    for train_id, data in train_dots.items():
-        arrivals = data['arrivals']
-        departs = data['departs']
-        positions = data['positions']
-        dwell = data['actual_dwell']
-        dot = data['dot']
 
-        first_depart = departs[0]
-        if first_depart - 300 <= t < first_depart:
-            pos_pt = track.interpolate(positions[0])
-            dot.set_data([pos_pt.x], [pos_pt.y])
-            updated_artists.append(dot)
+# === Conflict Detection Preparation (before animation setup) ===
+
+from collections import defaultdict, deque
+
+def find_last_scheduled_departure(train_id, before_station):
+    """Returns the last station in that train's list before `before_station` that has a fixed departure time."""
+    train_rows = timetable_df[timetable_df['ID'] == train_id].sort_values("Departs_s")
+    prev_depart = None
+    for i, row in enumerate(train_rows.itertuples()):
+        if row.Station == before_station:
+            break
+        if row.Stop in ('START', 'Y'):  # Fixed scheduled stop
+            prev_depart = row.Station
+    return prev_depart
+
+ #(before animation setup) ===
+
+# This dictionary will hold per-train segment movement info
+from collections import defaultdict, deque
+
+detected_segments = {}
+segment_graph = defaultdict(list)
+
+for _, row in segments_df.iterrows():
+    a = row['From']
+    b = row['To']
+    segment_graph[a].append(b)
+    segment_graph[b].append(a)
+
+# Function to find physical segments between any two stations (BFS path search)
+def find_path_segments(from_station, to_station):
+    visited = set()
+    queue = deque([(from_station, [])])
+
+    while queue:
+        current, path = queue.popleft()
+        if current == to_station:
+            return path
+        if current in visited:
+            continue
+        visited.add(current)
+        for neighbor in segment_graph[current]:
+            segment_row = segments_df[((segments_df['From'] == current) & (segments_df['To'] == neighbor)) |
+                                      ((segments_df['From'] == neighbor) & (segments_df['To'] == current))]
+            if not segment_row.empty:
+                queue.append((neighbor, path + [segment_row.iloc[0]]))
+    return []
+
+# Build per-train segment structure
+for train_id in timetable_df['ID'].unique():
+    train_data = timetable_df[timetable_df['ID'] == train_id].sort_values("Departs_s")
+    segment_info = []
+
+    for i in range(len(train_data) - 1):
+        row_from = train_data.iloc[i]
+        row_to = train_data.iloc[i + 1]
+
+        from_station = row_from['Station']
+        to_station = row_to['Station']
+        departs = row_from['Departs_s']
+        arrival = row_to['Departs_s'] - row_to['Minimum Dwell']
+
+        if pd.isna(departs) or pd.isna(arrival):
+            departs = departs if not pd.isna(departs) else None
+            arrival = arrival if not pd.isna(arrival) else None
+
+        segment_path = find_path_segments(from_station, to_station)
+
+        for seg in segment_path:
+            intermediate_from = seg['From']
+            intermediate_to = seg['To']
+            direction = 'forward' if intermediate_from == from_station else 'reverse'
+            segment_info.append({
+                'from': intermediate_from,
+                'to': intermediate_to,
+                'enter': departs,
+                'exit': arrival,
+                'direction': direction,
+                'track': seg['Track'],
+                'tight_runtime': seg['Tight Run'],
+                'train_id': train_id
+            })
+
+    detected_segments[train_id] = segment_info
+
+# === Conflict Detection & Resolution (Single Track Only, pre-Connolly) ===
+conflicts = []
+train_ids = list(detected_segments.keys())
+
+for i in range(len(train_ids)):
+    train_a = train_ids[i]
+    for seg_a in detected_segments[train_a]:
+        if seg_a['track'].lower() == 'double':
+            continue
+        if seg_a['to'] == 'Connolly':
             continue
 
-        # Final hold at last station
-        final_depart = departs[-1]
-        final_pos = positions[-1]
-        if final_depart <= t <= final_depart + 300:
-            pos_pt = track.interpolate(final_pos)
-            dot.set_data([pos_pt.x], [pos_pt.y])
-            updated_artists.append(dot)
-            continue
+        for j in range(i + 1, len(train_ids)):
+            train_b = train_ids[j]
+            for seg_b in detected_segments[train_b]:
+                if seg_b['track'].lower() == 'double':
+                    continue
+                if seg_b['to'] == 'Connolly':
+                    continue
 
-        if t > final_depart + 300:
-            dot.set_data([], [])
-            continue
+                same_segment = (
+                    (seg_a['from'] == seg_b['from'] and seg_a['to'] == seg_b['to']) or
+                    (seg_a['from'] == seg_b['to'] and seg_a['to'] == seg_b['from'])
+                )
 
-        idx = np.searchsorted(departs, t, side='right') - 1
-        if idx < 0 or idx >= len(positions) - 1:
-            dot.set_data([], [])
-            continue
+                if not same_segment:
+                    continue
 
-        t_depart = departs[idx]
-        t_arrive_next = arrivals[idx + 1]
-        t_depart_next = departs[idx + 1]
-        p0 = positions[idx]
-        p1 = positions[idx + 1]
+                # Check for overlapping time windows
+                if seg_a['enter'] is None or seg_a['exit'] is None:
+                    continue
+                if seg_b['enter'] is None or seg_b['exit'] is None:
+                    continue
 
-        # Before departure: hold at platform
-        if t < t_depart:
-            dist = p0
+                latest_start = max(seg_a['enter'], seg_b['enter'])
+                earliest_end = min(seg_a['exit'], seg_b['exit'])
 
-        # Between departure and next arrival: move based on computed speed
-        elif t_depart <= t < t_arrive_next:
-            segment_duration = t_arrive_next - t_depart
-            if segment_duration <= 0:
-                dist = p1
-            else:
-                progress = (t - t_depart) / segment_duration
-                dist = (1 - progress) * p0 + progress * p1
+                if latest_start < earliest_end:
+                    # Determine which train arrived first
+                    if seg_a['enter'] < seg_b['enter']:
+                        later_train_id = train_b
+                        later_seg = seg_b
+                        earlier_seg = seg_a
+                    else:
+                        later_train_id = train_a
+                        later_seg = seg_a
+                        earlier_seg = seg_b
 
-        # At arrival, hold until next departure
-        elif t_arrive_next <= t < t_depart_next:
-            dist = p1
+                    # Adjust speed of earlier train to exit 60s before later train's entry
+                    for seg in detected_segments[earlier_seg['train_id']]:
+                        if seg['from'] == earlier_seg['from'] and seg['to'] == earlier_seg['to']:
+                            seg['exit'] = min(seg['exit'], later_seg['enter'] - 60) if seg['exit'] else later_seg['enter'] - 60
 
-        else:
-            dot.set_data([], [])
-            continue
+                    conflicts.append({
+                        'segment': f"{seg_a['from']} → {seg_a['to']}",
+                        'train_a': train_a,
+                        'train_b': train_b,
+                        'overlap_start': latest_start,
+                        'overlap_end': earliest_end,
+                        'conflict_time': latest_start,
+                        'milepost_from': station_mileposts.get(seg_a['from'], 'N/A'),
+                        'milepost_to': station_mileposts.get(seg_a['to'], 'N/A')
+                    })
 
-        pos_pt = track.interpolate(dist)
-        dot.set_data([pos_pt.x], [pos_pt.y])
-        updated_artists.append(dot)
-
-    clock_text.set_text(f"Time: {datetime.utcfromtimestamp(t).strftime('%H:%M')}")
-    updated_artists.append(clock_text)
-
-    if frame == 0:
-        ax.legend(loc='upper right')
-
-    return updated_artists
-
-
-ani = FuncAnimation(fig, animate_trains, frames=FRAMES, interval=INTERVAL, blit=True)
-plt.legend()
-plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Print detected conflicts
+print("Detected Conflicts (with timing and milepost position):")
+for conflict in conflicts:
+    print(f"Conflict on {conflict['segment']} between Train {conflict['train_a']} and {conflict['train_b']} "
+      f"from {conflict['overlap_start']} to {conflict['overlap_end']} (at {conflict['conflict_time']}s), "
+      f"mileposts: {conflict['milepost_from']} → {conflict['milepost_to']}")
 
 
 

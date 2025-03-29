@@ -10,6 +10,7 @@ from shapely.geometry import LineString
 from shapely.ops import substring
 from datetime import datetime
 import contextily as ctx
+from collections import defaultdict
 
 # Define base directory dynamically from the script location
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -142,30 +143,6 @@ speed_slider = Slider(ax_slider, 'Speed Factor', valmin=1, valmax=10, valinit=3,
 
 clock_text = ax.text(0.5, 0.95, "Time: 00:00", transform=ax.transAxes, ha='center', fontsize=12, bbox=dict(facecolor='white', alpha=0.7))
 
-
-
-
-# # Add pause button
-# ax_pause = plt.axes([0.15, 0.02, 0.1, 0.05])  # [left, bottom, width, height]
-# pause_button = plt.Button(ax_pause, 'Pause', color='lightgoldenrodyellow', hovercolor='0.975')
-
-# # Global pause state
-# is_paused = False
-
-# # Pause button callback
-# def pause(event):
-#     global is_paused
-#     is_paused = not is_paused
-#     pause_button.label.set_text('Resume' if is_paused else 'Pause')
-#     fig.canvas.draw_idle()
-
-# pause_button.on_clicked(pause)
-
-
-
-
-
-
 train_ids = timetable_df['ID'].unique()
 train_dots = {}
 
@@ -202,139 +179,3 @@ FRAMES = 12000
 INTERVAL = 15
 
 sim_time = start_time
-
-
-def animate_trains(frame):
-    global sim_time
-    SPEED_FACTOR = speed_slider.val
-    sim_time += FRAME_STEP * SPEED_FACTOR
-    t = (sim_time - start_time) % (end_time - start_time) + start_time
-
-    updated_artists = []
-
-    for train_id, data in train_dots.items():
-        arrivals = data['arrivals']
-        departs = data['departs']
-        positions = data['positions']
-        dwell = data['actual_dwell']
-        dot = data['dot']
-
-        first_depart = departs[0]
-        if first_depart - 300 <= t < first_depart:
-            pos_pt = track.interpolate(positions[0])
-            dot.set_data([pos_pt.x], [pos_pt.y])
-            updated_artists.append(dot)
-            continue
-
-        # Final hold at last station
-        final_depart = departs[-1]
-        final_pos = positions[-1]
-        if final_depart <= t <= final_depart + 300:
-            pos_pt = track.interpolate(final_pos)
-            dot.set_data([pos_pt.x], [pos_pt.y])
-            updated_artists.append(dot)
-            continue
-
-        if t > final_depart + 300:
-            dot.set_data([], [])
-            continue
-
-        idx = np.searchsorted(departs, t, side='right') - 1
-        if idx < 0 or idx >= len(positions) - 1:
-            dot.set_data([], [])
-            continue
-
-        t_depart = departs[idx]
-        t_arrive_next = arrivals[idx + 1]
-        t_depart_next = departs[idx + 1]
-        p0 = positions[idx]
-        p1 = positions[idx + 1]
-
-        # Before departure: hold at platform
-        if t < t_depart:
-            dist = p0
-
-        # Between departure and next arrival: move based on computed speed
-        elif t_depart <= t < t_arrive_next:
-            segment_duration = t_arrive_next - t_depart
-            if segment_duration <= 0:
-                dist = p1
-            else:
-                progress = (t - t_depart) / segment_duration
-                dist = (1 - progress) * p0 + progress * p1
-
-        # At arrival, hold until next departure
-        elif t_arrive_next <= t < t_depart_next:
-            dist = p1
-
-        else:
-            dot.set_data([], [])
-            continue
-
-        pos_pt = track.interpolate(dist)
-        dot.set_data([pos_pt.x], [pos_pt.y])
-        updated_artists.append(dot)
-
-    clock_text.set_text(f"Time: {datetime.utcfromtimestamp(t).strftime('%H:%M')}")
-    updated_artists.append(clock_text)
-
-    if frame == 0:
-        ax.legend(loc='upper right')
-
-    return updated_artists
-
-
-ani = FuncAnimation(fig, animate_trains, frames=FRAMES, interval=INTERVAL, blit=True)
-plt.legend()
-plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
