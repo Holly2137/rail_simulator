@@ -1,0 +1,22 @@
+segment,train_a,train_b,overlap_start,overlap_end
+Mullingar → Killucan,101,201,27960.0,28080.0
+Killucan → Enfield,101,201,27960.0,28080.0
+Edgeworthstown → Mullingar,102,201,29580.0,30030.0
+Boyle → Carrick loop,104,202,41880.0,41940.0
+Carrick loop → Carrick on Shannon,104,202,41880.0,41940.0
+Boyle → Carrick loop,105,203,49080.0,49200.0
+Carrick loop → Carrick on Shannon,105,203,49080.0,49200.0
+Kilcock → Maynooth,105,205,56340.0,56400.0
+Boyle → Carrick loop,106,204,56280.0,56400.0
+Carrick loop → Carrick on Shannon,106,204,56280.0,56400.0
+Mullingar → Killucan,106,206,61080.0,62280.0
+Killucan → Enfield,106,206,61080.0,62280.0
+Boyle → Carrick loop,107,205,63480.0,63600.0
+Carrick loop → Carrick on Shannon,107,205,63480.0,63600.0
+Edgeworthstown → Mullingar,107,221,67860.0,68790.0
+Mullingar → Killucan,107,222,68880.0,70140.0
+Killucan → Enfield,107,222,68880.0,70140.0
+Sligo → Collooney,108,206,68700.0,69180.0
+Boyle → Carrick loop,108,207,70980.0,71040.0
+Carrick loop → Carrick on Shannon,108,207,70980.0,71040.0
+Edgeworthstown → Mullingar,108,210,74760.0,75030.0
