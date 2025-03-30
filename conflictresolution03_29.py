@@ -183,6 +183,10 @@ sim_time = start_time
 
 
 
+
+
+
+
 # === Conflict Detection Preparation (before animation setup) ===
 
 from collections import defaultdict, deque
