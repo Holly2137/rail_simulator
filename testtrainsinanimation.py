@@ -253,7 +253,7 @@ def simulate_test_train(train_id: str, test_trains_df: pd.DataFrame,
                         ((segments_df["From"] == to_station) & (segments_df["To"] == midpoint))
                     ]
                     if not seg1.empty and not seg2.empty:
-                        segment_sequence = [(from_station, midpoint), (midpoint, to_station)]
+                        segment_sequence = [(from_station, to_station)]
                     else:
                         print(f"⚠️  Segment path via midpoint '{midpoint}' missing: '{from_station}' <-> '{to_station}'")
                         raise ValueError(f"Segment path not found: {from_station} -> {to_station} via test train path")
@@ -264,6 +264,7 @@ def simulate_test_train(train_id: str, test_trains_df: pd.DataFrame,
                 occs = segment_occupancy.get(segment_key, [])
                 for occ in occs:
                     if not (proposed_arrival <= occ["start_time"] or last_depart_time >= occ["end_time"]):
+                        print(f"🚧 Conflict on segment {segment_key} with train {occ['train']} from {occ['start_time']} to {occ['end_time']}")
                         last_depart_time = occ["end_time"]
                         proposed_arrival = last_depart_time
 
@@ -305,6 +306,153 @@ def print_simulation_result(df: pd.DataFrame, train_id: str):
 # Run the test
 t1_result = simulate_test_train("T1", test_trains_df, segments_df, segment_occupancy)
 print_simulation_result(t1_result, "T1")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def simulate_test_train(train_id: str, test_trains_df: pd.DataFrame, 
+#                         segments_df: pd.DataFrame, segment_occupancy: dict) -> pd.DataFrame:
+#     segments_df["From"] = segments_df["From"].astype(str).str.strip()
+#     segments_df["To"] = segments_df["To"].astype(str).str.strip()
+
+#     df = test_trains_df[test_trains_df["ID"] == train_id].copy()
+
+#     df["Depart time"] = pd.to_datetime(df["Depart time"], format="%H:%M:%S").dt.time
+#     df["Departs_s"] = df["Depart time"].apply(lambda t: t.hour * 3600 + t.minute * 60 + t.second)
+#     df["Minimum Dwell"] = pd.to_numeric(df["Minimum Dwell"], errors="coerce").fillna(60).astype(int)
+#     df["arrivals"] = df["Departs_s"] - df["Minimum Dwell"]
+
+#     results = []
+#     current_time = df.iloc[0]["Departs_s"]
+#     last_passing_row = None
+#     last_depart_time = current_time
+
+#     for idx, row in df.iterrows():
+#         station = row["Station"].strip()
+#         dwell = row["Minimum Dwell"]
+#         passing = str(row["Passing"]).strip().upper()
+
+#         arrival_time = current_time
+#         depart_time = current_time + dwell
+
+#         results.append({
+#             "Station": station,
+#             "Arrival_s": arrival_time,
+#             "Arrival_str": datetime.fromtimestamp(arrival_time, tz=timezone.utc).strftime('%H:%M:%S'),
+#             "Depart_s": depart_time,
+#             "Depart_str": datetime.fromtimestamp(depart_time, tz=timezone.utc).strftime('%H:%M:%S'),
+#             "Delay": 0
+#         })
+
+#         if passing in ["Y", "END"]:
+#             if last_passing_row is not None:
+#                 from_station = last_passing_row["Station"].strip()
+#                 to_station = station
+
+#                 from_idx = df.index.get_loc(last_passing_row.name)
+#                 to_idx = df.index.get_loc(row.name)
+#                 intermediate_rows = df.iloc[from_idx+1:to_idx+1]
+
+#                 path_valid = True
+#                 segment_sequence = []
+
+#                 for i in range(len(intermediate_rows)):
+#                     s1 = df.iloc[from_idx + i]["Station"].strip()
+#                     s2 = df.iloc[from_idx + i + 1]["Station"].strip()
+#                     seg = segments_df[
+#                         ((segments_df["From"] == s1) & (segments_df["To"] == s2)) |
+#                         ((segments_df["From"] == s2) & (segments_df["To"] == s1))
+#                     ]
+#                     if seg.empty:
+#                         print(f"⚠️  Segment missing in segments_df: '{s1}' <-> '{s2}'")
+#                         path_valid = False
+#                         break
+#                     segment_sequence.append((s1, s2))
+
+#                 if not path_valid:
+#                     midpoint = "Carrick loop"
+#                     seg1 = segments_df[
+#                         ((segments_df["From"] == from_station) & (segments_df["To"] == midpoint)) |
+#                         ((segments_df["From"] == midpoint) & (segments_df["To"] == from_station))
+#                     ]
+#                     seg2 = segments_df[
+#                         ((segments_df["From"] == midpoint) & (segments_df["To"] == to_station)) |
+#                         ((segments_df["From"] == to_station) & (segments_df["To"] == midpoint))
+#                     ]
+#                     if not seg1.empty and not seg2.empty:
+#                        # this is where we edited unsure
+#                         segment_sequence = [(from_station, to_station)]  # for conflict checking
+
+#                     else:
+#                         print(f"⚠️  Segment path via midpoint '{midpoint}' missing: '{from_station}' <-> '{to_station}'")
+#                         raise ValueError(f"Segment path not found: {from_station} -> {to_station} via test train path")
+
+#                 proposed_arrival = row["arrivals"]
+
+#                 segment_key = (from_station, to_station) if (from_station, to_station) in segment_occupancy else (to_station, from_station)
+#                 occs = segment_occupancy.get(segment_key, [])
+#                 for occ in occs:
+#                     if not (proposed_arrival <= occ["start_time"] or last_depart_time >= occ["end_time"]):
+#                         last_depart_time = occ["end_time"]
+#                         proposed_arrival = last_depart_time
+
+#                 current_time = proposed_arrival
+#                 depart_time = current_time + dwell
+
+#                 results[-1]["Arrival_s"] = current_time
+#                 results[-1]["Depart_s"] = depart_time
+#                 results[-1]["Arrival_str"] = datetime.fromtimestamp(current_time, tz=timezone.utc).strftime('%H:%M:%S')
+#                 results[-1]["Depart_str"] = datetime.fromtimestamp(depart_time, tz=timezone.utc).strftime('%H:%M:%S')
+#                 results[-1]["Delay"] = max(0, current_time - row["arrivals"])
+
+#                 last_depart_time = depart_time
+#             last_passing_row = row
+#         else:
+#             current_time = depart_time
+
+#     return pd.DataFrame(results)
+
+# def print_simulation_result(df: pd.DataFrame, train_id: str):
+#     if df.empty:
+#         print(f"No simulation results for Test Train {train_id}")
+#         return
+
+#     print(f"\nSimulation Result for Test Train {train_id}")
+#     print("-" * 70)
+#     print(f"{'Station':25} | {'Arrival':8} | {'Depart':8} | {'Delay (s)':>10}")
+#     print("-" * 70)
+
+#     for _, row in df.iterrows():
+#         delay = row.get("Delay", 0)
+#         print(f"{row['Station']:25} | {row['Arrival_str']} | {row['Depart_str']} | {int(delay):>10}")
+
+#     total_time = df.iloc[-1]['Depart_s'] - df.iloc[0]['Arrival_s']
+#     print("-" * 70)
+#     print(f"Total Journey Time: {int(total_time // 60)} min {int(total_time % 60)} sec\n")
+
+
+# # Run the test
+# t1_result = simulate_test_train("T1", test_trains_df, segments_df, segment_occupancy)
+# print_simulation_result(t1_result, "T1")
 
 
 
