@@ -6,10 +6,12 @@ import numpy as np
 import math
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
+from matplotlib.widgets import Button
 from shapely.geometry import LineString
 from shapely.ops import substring
 from datetime import datetime
 import contextily as ctx
+
 
 # Define base directory dynamically from the script location
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -20,7 +22,7 @@ SHAPEFILE_DIR = os.path.join(BASE_DIR, "shapefiles")
 
 # Paths to data files
 SEGMENTS_FILE = os.path.join(RAW_DATA_DIR, "Segments.xlsx")
-TIMETABLE_FILE = os.path.join(RAW_DATA_DIR, "Timetable.xlsx")
+TIMETABLE_FILE = os.path.join(RAW_DATA_DIR, "Timetable2manual.xlsx")
 LINE_SHP = os.path.join(SHAPEFILE_DIR, "Sligo_Dublin_Line.shp")
 STOPS_SHP = os.path.join(SHAPEFILE_DIR, "Sligo_Dublin_Stops.shp")
 
@@ -137,10 +139,32 @@ for idx, row in stations.iterrows():
 
 ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
 
-ax_slider = plt.axes([0.4, 0.05, 0.2, 0.07])
+
+#speed slider
+ax_slider = plt.axes([0.5, 0.05, 0.2, 0.07])
 speed_slider = Slider(ax_slider, 'Speed Factor', valmin=1, valmax=10, valinit=3, valstep=1)
 
 clock_text = ax.text(0.5, 0.95, "Time: 00:00", transform=ax.transAxes, ha='center', fontsize=12, bbox=dict(facecolor='white', alpha=0.7))
+
+
+# Global pause state
+is_paused = False
+
+# Add pause button
+ax_pause = plt.axes([0.3, 0.06, 0.1, 0.03])  # [left, bottom, width, height]
+pause_button = Button(ax_pause, 'Pause', color='aqua', hovercolor='red')
+
+# Pause button callback
+def toggle_pause(event):
+    global is_paused
+    is_paused = not is_paused
+    pause_button.label.set_text('Resume' if is_paused else 'Pause')
+    fig.canvas.draw_idle()
+
+pause_button.on_clicked(toggle_pause)
+
+
+
 
 train_ids = timetable_df['ID'].unique()
 train_dots = {}
@@ -181,10 +205,41 @@ sim_time = start_time
 
 
 
+
+# # Time slider axes
+# ax_time_slider = plt.axes([0.65, 0.05, 0.25, 0.03])  # [left, bottom, width, height]
+# time_slider = Slider(ax_time_slider, 'Time', valmin=start_time, valmax=end_time, valinit=start_time, valstep=60)
+
+# def seconds_to_timestr(seconds):
+#     return datetime.utcfromtimestamp(seconds).strftime('%H:%M')
+
+# # Update sim_time from slider
+# def on_time_slider(val):
+#     global sim_time, is_paused
+#     is_paused = True
+#     pause_button.label.set_text('Resume')
+#     sim_time = val
+#     fig.canvas.draw_idle()
+
+# time_slider.on_changed(on_time_slider)
+
+
+
+
+
 def animate_trains(frame):
+   
+
+    global sim_time, last_artists
+    if is_paused:
+        return last_artists  # return previous frame's state without change
+
+    # rest of your animate_trains logic remains the same
+
     global sim_time
     SPEED_FACTOR = speed_slider.val
     sim_time += FRAME_STEP * SPEED_FACTOR
+  #  time_slider.set_val(sim_time)
     t = (sim_time - start_time) % (end_time - start_time) + start_time
 
     updated_artists = []
@@ -258,12 +313,63 @@ def animate_trains(frame):
     if frame == 0:
         ax.legend(loc='upper right')
 
+    last_artists = updated_artists  # store for paused state
     return updated_artists
 
 
 ani = FuncAnimation(fig, animate_trains, frames=FRAMES, interval=INTERVAL, blit=True)
 plt.legend()
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
