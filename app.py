@@ -4,7 +4,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import math
-import streamlit as st
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
 from matplotlib.widgets import Button
@@ -42,7 +41,7 @@ if railline.crs.to_string() != "EPSG:3857":
 if stations.crs.to_string() != "EPSG:3857":
     stations = stations.to_crs(epsg=3857)
 
-print("Data successfully loaded.")
+st.success("✅ Data successfully loaded.")
 
 # Clean station names
 stations["StopName"] = stations["StopName"].str.replace(" Train Station", "", regex=False)
