@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import streamlit as st
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
 from matplotlib.widgets import Button
@@ -12,6 +13,7 @@ from shapely.ops import substring
 from datetime import datetime
 import contextily as ctx
 
+st.title("Train Simulator")
 
 # Define base directory dynamically from the script location
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
