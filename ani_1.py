@@ -337,12 +337,12 @@ def animate_trains(frame):
 
 ani = FuncAnimation(fig, animate_trains, frames=FRAMES, interval=INTERVAL, blit=True, repeat=False)
 plt.legend()
-#plt.show()
+plt.show()
 
 
-writer = FFMpegWriter(fps=30)
-ani.save(os.path.join(ANIMATIONS_DIR, "Ani_1.mp4"), writer=writer)
+# writer = FFMpegWriter(fps=30)
+# ani.save(os.path.join(ANIMATIONS_DIR, "Ani_1.mp4"), writer=writer)
 
-print("🎬 Saving animation to Ani_1.mp4...")
+# print("🎬 Saving animation to Ani_1.mp4...")
 
 
