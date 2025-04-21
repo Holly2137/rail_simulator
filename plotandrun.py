@@ -6,6 +6,7 @@ import numpy as np
 import math
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Slider
+from matplotlib.widgets import Button
 from shapely.geometry import LineString
 from shapely.ops import substring
 from datetime import datetime
@@ -137,8 +138,30 @@ for idx, row in stations.iterrows():
 
 ctx.add_basemap(ax, source=ctx.providers.OpenStreetMap.Mapnik)
 
-ax_slider = plt.axes([0.4, 0.05, 0.2, 0.07])
+
+#speed slider
+ax_slider = plt.axes([0.5, 0.05, 0.2, 0.07])
 speed_slider = Slider(ax_slider, 'Speed Factor', valmin=1, valmax=10, valinit=3, valstep=1)
+
+clock_text = ax.text(0.5, 0.95, "Time: 00:00", transform=ax.transAxes, ha='center', fontsize=12, bbox=dict(facecolor='white', alpha=0.7))
+
+
+# Global pause state
+is_paused = False
+
+# Add pause button
+ax_pause = plt.axes([0.3, 0.06, 0.1, 0.03])  # [left, bottom, width, height]
+pause_button = Button(ax_pause, 'Pause', color='aqua', hovercolor='red')
+
+# Pause button callback
+def toggle_pause(event):
+    global is_paused
+    is_paused = not is_paused
+    pause_button.label.set_text('Resume' if is_paused else 'Pause')
+    fig.canvas.draw_idle()
+
+pause_button.on_clicked(toggle_pause)
+
 
 clock_text = ax.text(0.5, 0.95, "Time: 00:00", transform=ax.transAxes, ha='center', fontsize=12, bbox=dict(facecolor='white', alpha=0.7))
 
