@@ -74,7 +74,7 @@ st.title("🚆 Rail Simulation Player")
 ANIMATIONS_DIR = "animations"
 FIGURES_DIR = "appfigs"
 COMMENTARY_DIR = "commentary"
-TABLES_DIR = "apptabs"
+TABLES_DIR = "apptables"
 
 # List available .mp4 videos
 video_files = [f for f in os.listdir(ANIMATIONS_DIR) if f.endswith(".mp4")]
@@ -89,28 +89,38 @@ else:
     index = list(video_map.keys()).index(selected_label) + 1
 
     # Top row: video and commentary
-    top1, top2 = st.columns([2, 1])
-    with top1:
-        video_path = os.path.join(ANIMATIONS_DIR, selected_video)
-        with open(video_path, 'rb') as f:
-            st.video(f.read())
-        st.markdown(f"<div style='border: 2px solid green; padding: 10px;'>Video: {selected_label}</div>", unsafe_allow_html=True)
+    st.markdown("<div style='display: flex; gap: 2rem;'>", unsafe_allow_html=True)
 
-    with top2:
-        com_path = os.path.join(COMMENTARY_DIR, f"com_{index}.txt")
-        if os.path.exists(com_path):
-            with open(com_path, 'r') as f:
-                commentary = f.read()
-            st.markdown("<div style='border: 2px solid green; padding: 10px;'><strong>Commentary:</strong><br>" + commentary + "</div>", unsafe_allow_html=True)
-        else:
-            st.warning("No commentary available.")
+    # Video block
+    st.markdown("""
+    <div style='flex: 2; border: 2px solid green; padding: 10px;'>
+        <h4>Animation</h4>
+    """, unsafe_allow_html=True)
+    video_path = os.path.join(ANIMATIONS_DIR, selected_video)
+    with open(video_path, 'rb') as f:
+        st.video(f.read())
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Commentary block
+    st.markdown("""
+    <div style='flex: 1; border: 2px solid green; padding: 10px;'>
+        <h4>Commentary</h4>
+    """, unsafe_allow_html=True)
+    com_path = os.path.join(COMMENTARY_DIR, f"com_{index}.txt")
+    if os.path.exists(com_path):
+        with open(com_path, 'r') as f:
+            commentary = f.read()
+        st.markdown(commentary)
+    else:
+        st.warning("No commentary available.")
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
     # Bottom row: graph and table
-    bottom1, bottom2 = st.columns([2, 2])
+    bottom1, bottom2 = st.columns([3, 2])
     with bottom1:
         fig_path = os.path.join(FIGURES_DIR, f"appfig_{index}.png")
         if os.path.exists(fig_path):
-            bottom1.image(Image.open(fig_path), caption=f"Graph for {selected_label}", use_container_width=True)
+            st.image(Image.open(fig_path), caption=f"Graph for {selected_label}", use_container_width=True)
             st.markdown("<div style='border: 2px solid green; padding: 10px;'>Graph Displayed Above</div>", unsafe_allow_html=True)
         else:
             st.warning("No graph available.")
@@ -124,4 +134,5 @@ else:
             st.markdown("<div style='border: 2px solid green; padding: 10px;'>Table Displayed Above</div>", unsafe_allow_html=True)
         else:
             st.warning("No table data available.")
+
 
