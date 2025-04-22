@@ -11,7 +11,7 @@ st.title("🚆 Rail Simulation Player")
 ANIMATIONS_DIR = "animations"
 FIGURES_DIR = "appfigs"
 COMMENTARY_DIR = "commentary"
-TABLES_DIR = "tables"
+TABLES_DIR = "apptabs"
 
 # List available .mp4 videos
 video_files = [f for f in os.listdir(ANIMATIONS_DIR) if f.endswith(".mp4")]
@@ -51,11 +51,12 @@ else:
         col2.warning("No commentary available.")
 
     # Show table if exists
-    table_path = os.path.join(TABLES_DIR, f"table_{index}.csv")
+    table_path = os.path.join(TABLES_DIR, f"tab_{index}.xlsx")
     if os.path.exists(table_path):
-        df = pd.read_csv(table_path)
+        df = pd.read_excel(table_path)
         st.markdown("### Summary Table")
         st.dataframe(df)
     else:
         st.warning("No table data available.")
-        
+
+
