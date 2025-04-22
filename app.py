@@ -61,6 +61,81 @@
 
 
 
+# import streamlit as st
+# import os
+# import pandas as pd
+# from PIL import Image
+
+# # Set page title and layout
+# st.set_page_config(page_title="Rail Simulation Viewer", layout="wide")
+# st.title("🚆 Rail Simulation Player")
+
+# # Paths to folders
+# ANIMATIONS_DIR = "animations"
+# FIGURES_DIR = "appfigs"
+# COMMENTARY_DIR = "commentary"
+# TABLES_DIR = "apptables"
+
+# # List available .mp4 videos
+# video_files = [f for f in os.listdir(ANIMATIONS_DIR) if f.endswith(".mp4")]
+
+# if not video_files:
+#     st.error("No animations found in the 'animations' folder.")
+# else:
+#     # Map filenames to display names
+#     video_map = {f"Animation {i+1}": f for i, f in enumerate(video_files)}
+#     selected_label = st.selectbox("Select a simulation to play:", list(video_map.keys()))
+#     selected_video = video_map[selected_label]
+#     index = list(video_map.keys()).index(selected_label) + 1
+
+#     # Top row: video and commentary
+#     st.markdown("<div style='display: flex; gap: 2rem;'>", unsafe_allow_html=True)
+
+#     # Video block
+#     st.markdown("""
+#     <div style='flex: 2; border: 2px solid green; padding: 10px;'>
+#         <h4>Animation</h4>
+#     """, unsafe_allow_html=True)
+#     video_path = os.path.join(ANIMATIONS_DIR, selected_video)
+#     with open(video_path, 'rb') as f:
+#         st.video(f.read())
+#     st.markdown("</div>", unsafe_allow_html=True)
+
+#     # Commentary block
+#     st.markdown("""
+#     <div style='flex: 1; border: 2px solid green; padding: 10px;'>
+#         <h4>Commentary</h4>
+#     """, unsafe_allow_html=True)
+#     com_path = os.path.join(COMMENTARY_DIR, f"com_{index}.txt")
+#     if os.path.exists(com_path):
+#         with open(com_path, 'r') as f:
+#             commentary = f.read()
+#         st.markdown(commentary)
+#     else:
+#         st.warning("No commentary available.")
+#     st.markdown("</div></div>", unsafe_allow_html=True)
+
+#     # Bottom row: graph and table
+#     bottom1, bottom2 = st.columns([3, 2])
+#     with bottom1:
+#         fig_path = os.path.join(FIGURES_DIR, f"appfig_{index}.png")
+#         if os.path.exists(fig_path):
+#             st.image(Image.open(fig_path), caption=f"Graph for {selected_label}", use_container_width=True)
+#             st.markdown("<div style='border: 2px solid green; padding: 10px;'>Graph Displayed Above</div>", unsafe_allow_html=True)
+#         else:
+#             st.warning("No graph available.")
+
+#     with bottom2:
+#         table_path = os.path.join(TABLES_DIR, f"tab_{index}.csv")
+#         if os.path.exists(table_path):
+#             df = pd.read_csv(table_path)
+#             st.markdown("### Summary Table")
+#             st.dataframe(df, use_container_width=True)
+#             st.markdown("<div style='border: 2px solid green; padding: 10px;'>Table Displayed Above</div>", unsafe_allow_html=True)
+#         else:
+#             st.warning("No table data available.")
+
+
 import streamlit as st
 import os
 import pandas as pd
@@ -88,51 +163,46 @@ else:
     selected_video = video_map[selected_label]
     index = list(video_map.keys()).index(selected_label) + 1
 
-    # Top row: video and commentary
-    st.markdown("<div style='display: flex; gap: 2rem;'>", unsafe_allow_html=True)
+    # Top row: video and commentary (side by side)
+    top1, top2 = st.columns([2, 2])
+    with top1:
+        st.markdown("<div style='border: 2px solid green; padding: 10px;'>", unsafe_allow_html=True)
+        st.markdown("#### Animation")
+        video_path = os.path.join(ANIMATIONS_DIR, selected_video)
+        with open(video_path, 'rb') as f:
+            st.video(f.read())
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # Video block
-    st.markdown("""
-    <div style='flex: 2; border: 2px solid green; padding: 10px;'>
-        <h4>Animation</h4>
-    """, unsafe_allow_html=True)
-    video_path = os.path.join(ANIMATIONS_DIR, selected_video)
-    with open(video_path, 'rb') as f:
-        st.video(f.read())
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Commentary block
-    st.markdown("""
-    <div style='flex: 1; border: 2px solid green; padding: 10px;'>
-        <h4>Commentary</h4>
-    """, unsafe_allow_html=True)
-    com_path = os.path.join(COMMENTARY_DIR, f"com_{index}.txt")
-    if os.path.exists(com_path):
-        with open(com_path, 'r') as f:
-            commentary = f.read()
-        st.markdown(commentary)
-    else:
-        st.warning("No commentary available.")
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    with top2:
+        st.markdown("<div style='border: 2px solid green; padding: 10px;'>", unsafe_allow_html=True)
+        st.markdown("#### Commentary")
+        com_path = os.path.join(COMMENTARY_DIR, f"com_{index}.txt")
+        if os.path.exists(com_path):
+            with open(com_path, 'r') as f:
+                commentary = f.read()
+            st.markdown(commentary)
+        else:
+            st.warning("No commentary available.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     # Bottom row: graph and table
     bottom1, bottom2 = st.columns([3, 2])
     with bottom1:
+        st.markdown("<div style='border: 2px solid green; padding: 10px;'>", unsafe_allow_html=True)
         fig_path = os.path.join(FIGURES_DIR, f"appfig_{index}.png")
         if os.path.exists(fig_path):
             st.image(Image.open(fig_path), caption=f"Graph for {selected_label}", use_container_width=True)
-            st.markdown("<div style='border: 2px solid green; padding: 10px;'>Graph Displayed Above</div>", unsafe_allow_html=True)
         else:
             st.warning("No graph available.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with bottom2:
+        st.markdown("<div style='border: 2px solid green; padding: 10px;'>", unsafe_allow_html=True)
         table_path = os.path.join(TABLES_DIR, f"tab_{index}.csv")
         if os.path.exists(table_path):
             df = pd.read_csv(table_path)
             st.markdown("### Summary Table")
             st.dataframe(df, use_container_width=True)
-            st.markdown("<div style='border: 2px solid green; padding: 10px;'>Table Displayed Above</div>", unsafe_allow_html=True)
         else:
             st.warning("No table data available.")
-
-
+        st.markdown("</div>", unsafe_allow_html=True)
