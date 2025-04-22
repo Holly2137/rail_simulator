@@ -1,5 +1,5 @@
 This is a full runthrough of the simulation with test trains in the morning, close of busness and evening. 
 as can be seen the morning and evening trains run at suitable times and cross at stations as required. 
-Test trains out of sligo between 5.30 and 630 fail due to the long non pasing strech between Sligo and Boyle. 
+Test trains out of Sligo between 17:30 and 18:30 fail due to the long non pasing strech between Sligo and Boyle. 
 It may be possible to provide a train at this time however it will require adjustments to the existing scedule.
-Morning and evening servised may be implemented with no change to the current scedule. 
+Morning and evening services may be implemented with no change to the current scedule. 
