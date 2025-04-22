@@ -253,11 +253,11 @@ st.markdown("""
         color: white;
     }
     .box {
-        border: 3px solid #77d8d8;
-        border-radius: 10px;
-        padding: 15px;
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-        margin-bottom: 20px;
+        border: 3px solid #6fb7af;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+        margin-bottom: 25px;
     }
     h4 {
         margin-top: 0;
@@ -332,3 +332,4 @@ else:
             else:
                 st.warning("No table data available.")
             st.markdown("</div>", unsafe_allow_html=True)
+
