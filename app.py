@@ -58,3 +58,4 @@ else:
         st.dataframe(df)
     else:
         st.warning("No table data available.")
+        
