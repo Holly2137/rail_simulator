@@ -232,4 +232,5 @@ else:
             else:
                 st.warning("No table data available.")
             st.markdown("</div>", unsafe_allow_html=True)
+            
 
