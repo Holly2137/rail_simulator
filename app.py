@@ -135,6 +135,8 @@
 #         else:
 #             st.warning("No table data available.")
 
+# RULE: No code should be changed without explicit user approval (via 'x').
+
 import streamlit as st
 import os
 import pandas as pd
@@ -152,7 +154,7 @@ st.markdown("""
         color: white;
     }
     .box {
-        border: 2px solid lightgrey;
+        border: 3px solid #146d6d;
         border-radius: 10px;
         padding: 15px;
         box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
@@ -186,44 +188,48 @@ else:
     # Top row: video and commentary (side by side)
     top1, top2 = st.columns([3, 3])
     with top1:
-        st.markdown("<div class='box'>", unsafe_allow_html=True)
-        st.markdown("#### Animation")
-        video_path = os.path.join(ANIMATIONS_DIR, selected_video)
-        with open(video_path, 'rb') as f:
-            st.video(f.read())
-        st.markdown("</div>", unsafe_allow_html=True)
+        with st.container():
+            st.markdown("<div class='box'>", unsafe_allow_html=True)
+            st.markdown("#### Animation")
+            video_path = os.path.join(ANIMATIONS_DIR, selected_video)
+            with open(video_path, 'rb') as f:
+                st.video(f.read())
+            st.markdown("</div>", unsafe_allow_html=True)
 
     with top2:
-        st.markdown("<div class='box'>", unsafe_allow_html=True)
-        st.markdown("#### Commentary")
-        com_path = os.path.join(COMMENTARY_DIR, f"com_{index}.txt")
-        if os.path.exists(com_path):
-            with open(com_path, 'r') as f:
-                commentary = f.read()
-            st.markdown(commentary)
-        else:
-            st.warning("No commentary available.")
-        st.markdown("</div>", unsafe_allow_html=True)
+        with st.container():
+            st.markdown("<div class='box'>", unsafe_allow_html=True)
+            st.markdown("#### Commentary")
+            com_path = os.path.join(COMMENTARY_DIR, f"com_{index}.txt")
+            if os.path.exists(com_path):
+                with open(com_path, 'r') as f:
+                    commentary = f.read()
+                st.markdown(commentary)
+            else:
+                st.warning("No commentary available.")
+            st.markdown("</div>", unsafe_allow_html=True)
 
     # Bottom row: graph and table
     bottom1, bottom2 = st.columns([3, 3])
     with bottom1:
-        st.markdown("<div class='box'>", unsafe_allow_html=True)
-        fig_path = os.path.join(FIGURES_DIR, f"appfig_{index}.png")
-        if os.path.exists(fig_path):
-            st.image(Image.open(fig_path), caption=f"Graph for {selected_label}", use_container_width=True)
-        else:
-            st.warning("No graph available.")
-        st.markdown("</div>", unsafe_allow_html=True)
+        with st.container():
+            st.markdown("<div class='box'>", unsafe_allow_html=True)
+            fig_path = os.path.join(FIGURES_DIR, f"appfig_{index}.png")
+            if os.path.exists(fig_path):
+                st.image(Image.open(fig_path), caption=f"Graph for {selected_label}", use_container_width=True)
+            else:
+                st.warning("No graph available.")
+            st.markdown("</div>", unsafe_allow_html=True)
 
     with bottom2:
-        st.markdown("<div class='box'>", unsafe_allow_html=True)
-        table_path = os.path.join(TABLES_DIR, f"tab_{index}.csv")
-        if os.path.exists(table_path):
-            df = pd.read_csv(table_path)
-            st.markdown("### Summary Table")
-            st.dataframe(df, use_container_width=True)
-        else:
-            st.warning("No table data available.")
-        st.markdown("</div>", unsafe_allow_html=True)
-        
+        with st.container():
+            st.markdown("<div class='box'>", unsafe_allow_html=True)
+            table_path = os.path.join(TABLES_DIR, f"tab_{index}.csv")
+            if os.path.exists(table_path):
+                df = pd.read_csv(table_path)
+                st.markdown("### Summary Table")
+                st.dataframe(df, use_container_width=True)
+            else:
+                st.warning("No table data available.")
+            st.markdown("</div>", unsafe_allow_html=True)
+
