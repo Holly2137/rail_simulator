@@ -11,7 +11,7 @@ st.title("🚆 Rail Simulation Player")
 ANIMATIONS_DIR = "animations"
 FIGURES_DIR = "appfigs"
 COMMENTARY_DIR = "commentary"
-TABLES_DIR = "apptabs"
+TABLES_DIR = "apptables"
 
 # List available .mp4 videos
 video_files = [f for f in os.listdir(ANIMATIONS_DIR) if f.endswith(".mp4")]
