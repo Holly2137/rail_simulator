@@ -425,6 +425,7 @@ else:
             df = pd.read_csv(table_path)
             st.dataframe(df, use_container_width=True)
     with row3[1]:
+        st.subheader("")
         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}c.txt")
         if os.path.exists(com_path):
             with open(com_path, 'r') as f:
@@ -438,6 +439,7 @@ else:
         if os.path.exists(chart_path):
             st.image(Image.open(chart_path), use_container_width=True)
     with row4[1]:
+        st.subheader("")
         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}d.txt")
         if os.path.exists(com_path):
             with open(com_path, 'r') as f:
