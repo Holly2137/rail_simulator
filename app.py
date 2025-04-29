@@ -363,6 +363,19 @@ st.set_page_config(
     page_icon="🚆"
 )
 
+# Force black background + white text
+st.markdown("""
+<style>
+    [data-testid="stAppViewContainer"] {
+        background-color: #000000;
+    }
+    .stMarkdown, .stDataFrame, .stVideo {
+        color: #ffffff;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
 # Title
 st.title("🚆 Sligo-Dublin Rail Line Simulator")
 
@@ -448,3 +461,5 @@ else:
     # Footer
     st.markdown("---")
     st.caption("🚉 Built with Streamlit")
+    
+    
