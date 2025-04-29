@@ -163,6 +163,103 @@
 #             st.warning("No table data available.")
 
 
+# import streamlit as st
+# import os
+# import pandas as pd
+# from PIL import Image
+
+# # Set page config
+# st.set_page_config(
+#     page_title="Rail Simulation Viewer",
+#     layout="wide",
+#     page_icon="🚆"
+# )
+
+# # Title
+# st.title("🚆 Sligo-Dublin Rail Line Simulator")
+
+# # Paths
+# ANIMATIONS_DIR = "animations"
+# FIGURES_DIR = "appfigs"
+# COMMENTARY_DIR = "commentary"
+# TABLES_DIR = "apptables"
+
+# # Video selection
+# video_files = [f for f in os.listdir(ANIMATIONS_DIR) if f.endswith(".mp4")]
+# if not video_files:
+#     st.error("No animations found in the 'animations' folder.")
+# else:
+#     video_map = {f"Animation {i+1}": f for i, f in enumerate(video_files)}
+#     col1, _ = st.columns([1, 3])  # 1:3 ratio (25% width for selectbox)
+#     with col1:
+#         selected_label = st.selectbox(
+#             "🎬 Select a simulation to play:", 
+#             list(video_map.keys())
+#         )
+#     selected_video = video_map[selected_label]
+#     index = list(video_map.keys()).index(selected_label) + 1
+    
+#     # Section 1: Video and first commentary
+#     top1, top2 = st.columns([2, 1], gap="large")
+#     with top1:
+#         st.subheader("Playback")
+#         video_path = os.path.join(ANIMATIONS_DIR, selected_video)
+#         with open(video_path, 'rb') as f:
+#             st.video(f.read())
+
+#     with top2:
+#         st.subheader("Discription")
+#         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}a.txt")
+#         if os.path.exists(com_path):
+#             with open(com_path, 'r') as f:
+#                 st.markdown(f.read())
+#         else:
+#             st.warning("No commentary available.")
+
+#     # Section 2: Table and second commentary
+#     mid1, mid2 = st.columns([2, 1], gap="large")
+#     with mid1:
+#         st.subheader("Data Summary")
+#         table_path = os.path.join(TABLES_DIR, f"tab_{index}.csv")
+#         if os.path.exists(table_path):
+#             df = pd.read_csv(table_path)
+#             st.dataframe(df, use_container_width=True)
+#         else:
+#             st.warning("No table data available.")
+
+#     with mid2:
+        
+#         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}b.txt")
+#         if os.path.exists(com_path):
+#             with open(com_path, 'r') as f:
+#                 st.markdown(f.read())
+#         else:
+#             st.warning("No commentary available.")
+
+#     # Section 3: Stringline and third commentary
+#     bot1, bot2 = st.columns([2, 1], gap="large")
+#     with bot1:
+#         st.subheader("Route 7 Stringline Diagram")
+#         fig_path = os.path.join(FIGURES_DIR, f"appfig_{index}.png")
+#         if os.path.exists(fig_path):
+#             st.image(Image.open(fig_path), use_container_width=True)
+#         else:
+#             st.warning("No graph available.")
+
+#     with bot2:
+        
+#         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}c.txt")
+#         if os.path.exists(com_path):
+#             with open(com_path, 'r') as f:
+#                 st.markdown(f.read())
+#         else:
+#             st.warning("No commentary available.")
+
+#     # Footer
+#     st.markdown("---")
+#     st.caption("🚉 Built with Streamlit")
+
+
 import streamlit as st
 import os
 import pandas as pd
@@ -176,13 +273,14 @@ st.set_page_config(
 )
 
 # Title
-st.title("🚆 Sligo-Dublin Rail Line Simulator")
+st.title("🚆 Rail Simulation Player")
 
 # Paths
 ANIMATIONS_DIR = "animations"
 FIGURES_DIR = "appfigs"
 COMMENTARY_DIR = "commentary"
 TABLES_DIR = "apptables"
+CHARTS_DIR = "appchart"
 
 # Video selection
 video_files = [f for f in os.listdir(ANIMATIONS_DIR) if f.endswith(".mp4")]
@@ -190,7 +288,7 @@ if not video_files:
     st.error("No animations found in the 'animations' folder.")
 else:
     video_map = {f"Animation {i+1}": f for i, f in enumerate(video_files)}
-    col1, _ = st.columns([1, 3])  # 1:3 ratio (25% width for selectbox)
+    col1, _ = st.columns([1, 3])
     with col1:
         selected_label = st.selectbox(
             "🎬 Select a simulation to play:", 
@@ -198,8 +296,8 @@ else:
         )
     selected_video = video_map[selected_label]
     index = list(video_map.keys()).index(selected_label) + 1
-    
-    # Section 1: Video and first commentary
+
+    # Section 1: Video and Stringline Diagram
     top1, top2 = st.columns([2, 1], gap="large")
     with top1:
         st.subheader("Playback")
@@ -208,15 +306,14 @@ else:
             st.video(f.read())
 
     with top2:
-        st.subheader("Discription")
-        com_path = os.path.join(COMMENTARY_DIR, f"com_{index}a.txt")
-        if os.path.exists(com_path):
-            with open(com_path, 'r') as f:
-                st.markdown(f.read())
+        st.subheader("Stringline Diagram")
+        fig_path = os.path.join(FIGURES_DIR, f"appfig_{index}.png")
+        if os.path.exists(fig_path):
+            st.image(Image.open(fig_path), use_container_width=True)
         else:
-            st.warning("No commentary available.")
+            st.warning("No diagram available.")
 
-    # Section 2: Table and second commentary
+    # Section 2: Table and Commentary B
     mid1, mid2 = st.columns([2, 1], gap="large")
     with mid1:
         st.subheader("Data Summary")
@@ -228,32 +325,27 @@ else:
             st.warning("No table data available.")
 
     with mid2:
-        
+        st.subheader("")
         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}b.txt")
         if os.path.exists(com_path):
             with open(com_path, 'r') as f:
                 st.markdown(f.read())
-        else:
-            st.warning("No commentary available.")
 
-    # Section 3: Stringline and third commentary
+    # Section 3: Chart and Commentary D
     bot1, bot2 = st.columns([2, 1], gap="large")
     with bot1:
-        st.subheader("Route 7 Stringline Diagram")
-        fig_path = os.path.join(FIGURES_DIR, f"appfig_{index}.png")
-        if os.path.exists(fig_path):
-            st.image(Image.open(fig_path), use_container_width=True)
+        st.subheader("Analysis Chart")
+        chart_path = os.path.join(CHARTS_DIR, f"chart_{index}.png")
+        if os.path.exists(chart_path):
+            st.image(Image.open(chart_path), use_container_width=True)
         else:
-            st.warning("No graph available.")
+            st.warning("No chart available.")
 
     with bot2:
-        
-        com_path = os.path.join(COMMENTARY_DIR, f"com_{index}c.txt")
+        com_path = os.path.join(COMMENTARY_DIR, f"com_{index}d.txt")
         if os.path.exists(com_path):
             with open(com_path, 'r') as f:
                 st.markdown(f.read())
-        else:
-            st.warning("No commentary available.")
 
     # Footer
     st.markdown("---")
