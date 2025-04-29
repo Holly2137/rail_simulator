@@ -364,7 +364,7 @@ st.set_page_config(
 )
 
 # Title
-st.title("🚆 Rail Simulation Player")
+st.title("🚆 Sligo-Dublin Rail Line Simulator")
 
 # Paths
 ANIMATIONS_DIR = "animations"
