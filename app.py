@@ -410,7 +410,7 @@ else:
         with open(video_path, 'rb') as f:
             st.video(f.read())
     with row1[1]:
-        st.subheader("Discription")
+        st.subheader("Description")
         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}a.txt")
         if os.path.exists(com_path):
             with open(com_path, 'r') as f:

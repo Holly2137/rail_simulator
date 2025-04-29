@@ -136,7 +136,7 @@ for point in passing_points:
         milepost = station_mileposts[point]
         ratio = (milepost - min_milepost) / (max_milepost - min_milepost)
         geom = track.interpolate(ratio * track.length)
-        ax.plot(geom.x, geom.y, 'o', color='green', markersize=4, zorder=4, label="Passing Point" if point == passing_points[0] else "")
+        ax.plot(geom.x, geom.y, 'o', color='green', markersize=4, zorder=4, label="Pass Point" if point == passing_points[0] else "")
         ax.text(geom.x+10000, geom.y+4000, point, fontsize=7, ha='right', color='darkgoldenrod')
 
 for idx, row in stations.iterrows():
@@ -229,7 +229,7 @@ start_time = timetable_df["Departs_s"].min() - 1000
 end_time = timetable_df["Departs_s"].max() + 1000
 
 FRAME_STEP = 5
-FRAMES = 4500
+FRAMES = 990
 INTERVAL = 15
 
 sim_time = start_time
@@ -329,7 +329,8 @@ def animate_trains(frame):
     updated_artists.append(clock_text)
 
     if frame == 0:
-        ax.legend(loc='upper right')
+        
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
     last_artists = updated_artists  # store for paused state
     return updated_artists
@@ -337,12 +338,12 @@ def animate_trains(frame):
 
 ani = FuncAnimation(fig, animate_trains, frames=FRAMES, interval=INTERVAL, blit=True, repeat=False)
 plt.legend()
-plt.show()
+#plt.show()
 
 
-# writer = FFMpegWriter(fps=30)
-# ani.save(os.path.join(ANIMATIONS_DIR, "Ani_1.mp4"), writer=writer)
+writer = FFMpegWriter(fps=30)
+ani.save(os.path.join(ANIMATIONS_DIR, "Ani_2.mp4"), writer=writer)
 
-# print("🎬 Saving animation to Ani_1.mp4...")
+print("🎬 Saving animation to Ani_2.mp4...")
 
 
