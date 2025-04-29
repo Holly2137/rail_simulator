@@ -176,7 +176,7 @@ st.set_page_config(
 )
 
 # Title
-st.title("🚆 Rail Simulation Player")
+st.title("🚆 Sligo-Dublin Rail Line Simulator")
 
 # Paths
 ANIMATIONS_DIR = "animations"
@@ -190,13 +190,15 @@ if not video_files:
     st.error("No animations found in the 'animations' folder.")
 else:
     video_map = {f"Animation {i+1}": f for i, f in enumerate(video_files)}
-    selected_label = st.selectbox(
-        "🎬 Select a simulation to play:", 
-        list(video_map.keys())
-    )
+    col1, _ = st.columns([1, 3])  # 1:3 ratio (25% width for selectbox)
+    with col1:
+        selected_label = st.selectbox(
+            "🎬 Select a simulation to play:", 
+            list(video_map.keys())
+        )
     selected_video = video_map[selected_label]
     index = list(video_map.keys()).index(selected_label) + 1
-
+    
     # Section 1: Video and first commentary
     top1, top2 = st.columns([2, 1], gap="large")
     with top1:
