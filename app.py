@@ -371,6 +371,8 @@ st.markdown("""
     }
     .stMarkdown, .stDataFrame, .stVideo {
         color: #ffffff;
+    h1, h2, h3, h4, h5, h6 {
+        color: #ffffff !important;
     }
 </style>
 """, unsafe_allow_html=True)
