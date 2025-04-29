@@ -1,1 +1,10 @@
-table comments
+
+
+
+This stringline diagram shows the movements of trains on the route plotted ovet time and space. 
+
+Existing services are represented by black lines.
+
+The Yellow lines represent the optimised feasable morning and evening services obtained by repeated testing at miunute intervals over selected periods. 
+
+Red lines represent a test group where no feasable solution was determined without modification to the existing services.
