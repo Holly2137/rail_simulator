@@ -63,7 +63,20 @@ grouped = timetable_df.groupby("ID")
 
 for train_id, group in grouped:
     group = group.sort_values(by="Departs_s").reset_index(drop=True)
-    colour = "red" if str(train_id).startswith("T") else "black"
+    # colour = "red" if str(train_id).startswith("T") else "black"
+
+    train_id_str = str(train_id)
+    if train_id_str.startswith("TA"):
+        colour = "red"
+    elif train_id_str.startswith("T"):
+        colour = "darkgoldenrod"
+    else:
+        colour = "black"
+
+
+
+
+
 
     for i in range(1, len(group)):
         prev_row = group.iloc[i - 1]
