@@ -396,6 +396,7 @@ else:
         with open(video_path, 'rb') as f:
             st.video(f.read())
     with row1[1]:
+        st.subheader("Discription")
         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}a.txt")
         if os.path.exists(com_path):
             with open(com_path, 'r') as f:
@@ -409,6 +410,7 @@ else:
         if os.path.exists(fig_path):
             st.image(Image.open(fig_path), use_container_width=True)
     with row2[1]:
+        st.subheader("")
         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}b.txt")
         if os.path.exists(com_path):
             with open(com_path, 'r') as f:
