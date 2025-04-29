@@ -126,7 +126,7 @@ else:
     index = list(video_map.keys()).index(selected_label) + 1
 
     # Top row: video and commentary (side by side)
-    top1, top2 = st.columns([3, 3])
+    top1, top2 = st.columns([2, 1],gap="large")
     with top1:
         st.subheader("Playback")
         video_path = os.path.join(ANIMATIONS_DIR, selected_video)
@@ -144,7 +144,7 @@ else:
             st.warning("No commentary available.")
 
     # Bottom row: graph and table
-    bottom1, bottom2 = st.columns([3, 3])
+    bottom1, bottom2 = st.columns([2, 1],gap="large")
     with bottom1:
         st.subheader("Route 7 Stringline Diagram")
         fig_path = os.path.join(FIGURES_DIR, f"appfig_{index}.png")
