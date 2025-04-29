@@ -363,14 +363,13 @@ st.set_page_config(
     page_icon="🚆"
 )
 
-# Force black background + white text
 st.markdown("""
 <style>
     [data-testid="stAppViewContainer"] {
         background-color: #000000;
     }
-    .stMarkdown, .stDataFrame, .stVideo {
-        color: #ffffff;
+    .stMarkdown, .stDataFrame, .stVideo, .stSelectbox label, .stSelectbox select, .stTextInput label, .stTextInput input {
+        color: #ffffff !important;
     }
     h1, h2, h3, h4, h5, h6 {
         color: #ffffff !important;
