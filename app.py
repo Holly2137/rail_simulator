@@ -206,7 +206,7 @@ else:
             st.video(f.read())
 
     with top2:
-        st.subheader("Insight A")
+        st.subheader("Discription")
         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}a.txt")
         if os.path.exists(com_path):
             with open(com_path, 'r') as f:
@@ -226,7 +226,7 @@ else:
             st.warning("No table data available.")
 
     with mid2:
-        st.subheader("Insight B")
+        
         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}b.txt")
         if os.path.exists(com_path):
             with open(com_path, 'r') as f:
@@ -245,7 +245,7 @@ else:
             st.warning("No graph available.")
 
     with bot2:
-        st.subheader("Insight C")
+        
         com_path = os.path.join(COMMENTARY_DIR, f"com_{index}c.txt")
         if os.path.exists(com_path):
             with open(com_path, 'r') as f:
