@@ -389,7 +389,7 @@ else:
     index = list(video_map.keys()).index(selected_label) + 1
 
     # 1. Video (left) + com1a (right)
-    row1 = st.columns([2, 1], gap="large")
+    row1 = st.columns([3, 1], gap="large")
     with row1[0]:
         st.subheader("Playback")
         video_path = os.path.join(ANIMATIONS_DIR, selected_video)
@@ -403,7 +403,7 @@ else:
                 st.markdown(f.read())
 
     # 2. Stringline (left) + com1b (right)
-    row2 = st.columns([2, 1], gap="large")
+    row2 = st.columns([3, 1], gap="large")
     with row2[0]:
         st.subheader("Stringline Diagram")
         fig_path = os.path.join(FIGURES_DIR, f"appfig_{index}.png")
@@ -417,7 +417,7 @@ else:
                 st.markdown(f.read())
 
     # 3. Table (left) + com1c (right)
-    row3 = st.columns([2, 1], gap="large")
+    row3 = st.columns([3, 1], gap="large")
     with row3[0]:
         st.subheader("Data Summary")
         table_path = os.path.join(TABLES_DIR, f"tab_{index}.csv")
@@ -432,7 +432,7 @@ else:
                 st.markdown(f.read())
 
     # 4. Chart (left) + com1d (right)
-    row4 = st.columns([2, 1], gap="large")
+    row4 = st.columns([3, 1], gap="large")
     with row4[0]:
         st.subheader("Analysis Chart")
         chart_path = os.path.join(CHARTS_DIR, f"chart_{index}.PNG")
