@@ -1,4 +1,4 @@
 
 
 
-This table shows the feasable tested solutions Depart and arival times, runtime and delays.
+This table shows the feasable tested solutions depart and arrival times, runtime and delays.
