@@ -229,7 +229,7 @@ start_time = timetable_df["Departs_s"].min() - 1000
 end_time = timetable_df["Departs_s"].max() + 1000
 
 FRAME_STEP = 5
-FRAMES = 990
+FRAMES = 4500
 INTERVAL = 15
 
 sim_time = start_time
@@ -338,12 +338,12 @@ def animate_trains(frame):
 
 ani = FuncAnimation(fig, animate_trains, frames=FRAMES, interval=INTERVAL, blit=True, repeat=False)
 plt.legend()
-#plt.show()
+plt.show()
 
 
-writer = FFMpegWriter(fps=30)
-ani.save(os.path.join(ANIMATIONS_DIR, "Ani_2.mp4"), writer=writer)
+# writer = FFMpegWriter(fps=30)
+# ani.save(os.path.join(ANIMATIONS_DIR, "Ani_2.mp4"), writer=writer)
 
-print("🎬 Saving animation to Ani_2.mp4...")
+# print("🎬 Saving animation to Ani_2.mp4...")
 
 
