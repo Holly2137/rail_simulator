@@ -16,7 +16,7 @@ import contextily as ctx
 import matplotlib as mpl
 
 
-# Define base directory dynamically from the script location
+# Define base directory 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Define relative paths
@@ -24,8 +24,9 @@ RAW_DATA_DIR = os.path.join(BASE_DIR, "rawdata")
 SHAPEFILE_DIR = os.path.join(BASE_DIR, "shapefiles")
 ANIMATIONS_DIR = os.path.join(BASE_DIR, "animations")
 
-
+#For MP3 Videos
 mpl.rcParams['animation.ffmpeg_path'] = os.path.join(BASE_DIR, "ffmpeg.exe")
+
 # Paths to data files
 SEGMENTS_FILE = os.path.join(RAW_DATA_DIR, "Segments.xlsx")
 TIMETABLE_FILE = os.path.join(RAW_DATA_DIR, "Timetable2manual.xlsx")
@@ -40,7 +41,7 @@ timetable_df = pd.read_excel(TIMETABLE_FILE)
 railline = gpd.read_file(LINE_SHP)
 stations = gpd.read_file(STOPS_SHP)
 
-# Reproject to EPSG:3857 if necessary
+# Reproject to EPSG:3857 
 if railline.crs.to_string() != "EPSG:3857":
     railline = railline.to_crs(epsg=3857)
 if stations.crs.to_string() != "EPSG:3857":
@@ -146,8 +147,8 @@ for idx, row in stations.iterrows():
 ctx.add_basemap(ax, source=ctx.providers.CartoDB.Positron)
                #ctx.providers.CartoDB.Voyager)
                 #ctx.providers.CartoDB.DarkMatter)
-                #
                 #ctx.providers.OpenStreetMap.Mapnik)
+                
 
 #speed slider
 ax_slider = plt.axes([0.5, 0.05, 0.2, 0.07])
@@ -170,7 +171,6 @@ def toggle_pause(event):
     fig.canvas.draw_idle()
 
 pause_button.on_clicked(toggle_pause)
-
 
 train_ids = timetable_df['ID'].unique()
 train_dots = {}
@@ -234,15 +234,13 @@ INTERVAL = 15
 
 sim_time = start_time
 
-
+# Animation function
 def animate_trains(frame):
    
-
     global sim_time, last_artists
     if is_paused:
         return last_artists  # return previous frame's state without change
 
-    # rest of your animate_trains logic remains the same
 
     global sim_time
     SPEED_FACTOR = speed_slider.val
@@ -340,10 +338,8 @@ ani = FuncAnimation(fig, animate_trains, frames=FRAMES, interval=INTERVAL, blit=
 plt.legend()
 plt.show()
 
-
 # writer = FFMpegWriter(fps=30)
 # ani.save(os.path.join(ANIMATIONS_DIR, "Ani_2.mp4"), writer=writer)
-
 # print("🎬 Saving animation to Ani_2.mp4...")
 
 

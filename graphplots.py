@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
 
-# Define base directory dynamically from the script location
+# Define base directory- script location
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Define relative paths
@@ -34,12 +34,13 @@ timetable_df["Departs_s"] = timetable_df["Depart time"].apply(time_to_seconds)
 timetable_df = timetable_df.dropna(subset=["Station", "Departs_s", "Milepost(m)"])
 timetable_df = timetable_df[["ID", "Station", "Departs_s", "Milepost(m)", "Minimum Dwell"]]
 
-# Calculate arrival times based on dwell
-# Ensure dwell is numeric and fill NaNs
+
+# Ensure dwell is numeric
 timetable_df["Minimum Dwell"] = pd.to_numeric(timetable_df["Minimum Dwell"], errors="coerce").fillna(0)
+# Calculate arrival times 
 timetable_df["Arrives_s"] = timetable_df["Departs_s"] - timetable_df["Minimum Dwell"]
 
-# Get station order and mapping to km for y-axis labels
+# station order and mapping to km for y-axis labels
 station_order = timetable_df.drop_duplicates("Station").sort_values("Milepost(m)", ascending=True)
 station_to_km = dict(zip(station_order["Station"], station_order["Milepost(m)"] / 1000))
 
@@ -52,8 +53,6 @@ manual_offsets = {
     "Connolly": -1.0,
     "Broombridge": 1.0
 }
-
-
 
 # --- PLOTTING TRAIN GRAPH ---
 fig, ax = plt.subplots(figsize=(14, 8))
@@ -72,10 +71,6 @@ for train_id, group in grouped:
         colour = "darkgoldenrod"
     else:
         colour = "black"
-
-
-
-
 
 
     for i in range(1, len(group)):
