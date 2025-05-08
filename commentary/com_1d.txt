@@ -1,3 +1,3 @@
 
 
-chart commentary
+This chart displays test train performance by arrival time in Sligo. Each bar represents a train, ordered chronologically along the x-axis. The full height of the bar shows the total runtime in minutes, while the lighter segment indicates the portion of that runtime classified as delay.
