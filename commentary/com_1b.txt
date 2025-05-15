@@ -1,10 +1,19 @@
 
 
 
-This stringline diagram shows the movements of trains on the route plotted over time and space. 
+This stringline diagram shows train movements along the route plotted against time and distance from Dublin.
 
-Existing services are represented by black lines.
+Black lines represent existing scheduled services.
 
-The yellow lines represent the optimised feasable morning and evening services obtained by repeated testing at minute intervals over selected periods. 
+Yellow lines indicate selected feasible test services. These are drawn from a broader set of T1–T90 morning tests and TE1–TE60 evening tests, where trains were simulated at one-minute intervals across key time periods. Only a few representative examples are shown here:
 
-Red lines represent a test group where no feasable solution was determined without modification to the existing services.
+Morning: T3, T36, T64, T90
+
+Evening: TE1, TE36, TE57
+
+These represent optimised options with minimal delays and suitable crossing locations, aimed at supporting efficient commuter journeys.
+
+Red lines show test services from the TA1–TA60 group, where no feasible paths were found without modifying the existing schedule. These conflicts highlight the limitations of the long single-track section between Sligo and Boyle and support the case for investigation into the reinstatment of additional passing points to divide the long strech and allow greater flexibility in sceduling as well as reducing delay impacts.
+
+The diagram supports the conclusion that both a morning commuter service and a late evening service to support the evening economy are achievable within current operational constraints, provided they are carefully timed to make use of existing passing points.
+

@@ -1,4 +1,8 @@
 
 
 
-This table shows the feasable tested solutions depart and arrival times, runtime and delays.
+This table summarises the performance of selected feasible test services displayed in the stringline diagram. It includes each train’s departure and arrival time, total journey duration, delay due to conflicts, total runtime (the full end-to-end journey time including all movement and stoppages), and enforced wait time, which refers to time spent stationary while waiting to pass another train, not to scheduled stops at stations.
+
+For the morning service, T36 and T64 emerged as the most suitable options. This conclusion is supported not only by their operational efficiency, with minimal delays and wait times, but also by the results of a public stakeholder survey of 529 participants. A majority of respondents expressed a preference for arrival into Sligo between 8:00 and 9:00. Both the 8:11 and 8:37 arivals allow sufficient time for onward travel to workplaces such as Sligo University Hospital and ATU Sligo, for 9:00am starts. T3, although technically feasible, is slightly too early for most commuters and has a longer runtime with more waiting, making it less suitable. T90, while also conflict-free, arrives too late for a commuter service and too late to be turned around in time to operate the 09:05 service to Dublin, making it less practical operationally.
+
+For the evening service, TE36, departing Sligo at 21:05, is considered the most suitable option. Its timing complements existing departures at 17:05 and 19:05, creating a clean and regular evening pattern. This consistency improves usability for passengers and simplifies the timetable structure for both operations and communication.

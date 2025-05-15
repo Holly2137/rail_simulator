@@ -1,9 +1,9 @@
-This is a full runthrough of the simulation with test trains in the morning, close of business and evening. 
+This video shows a full runthrough of the simulation, including test trains during the morning peak, close of business, and evening.
 
-As can be seen the morning and evening trains run at suitable times and cross at stations as required. 
+The test trains demonstrate that a morning and evening commuter service could operate successfully, with several feasible timing options available for each. Trains pass at stations as required, and the schedules align well with likely demand patterns.
 
-Test trains out of Sligo between 17:30 and 18:30 fail due to the long non passing strech between Sligo and Boyle. 
+For the morning service, trains were tested at one-minute intervals over a 90-minute period. This helped identify available arrival windows into Sligo. The trains shown in the video represent optimised choices, with minimal delays and short overall journey times, aimed at providing an efficient service for commuters.
 
-It may be possible to provide a train at this time however it will require adjustments to the existing scedule.
+Trains departing Sligo between 17:30 and 18:30 were not successful due to the long non-passing stretch between Sligo and Boyle. A service at this time might still be possible but would likely require adjustments to the existing timetable.
 
-Morning and evening services may be implemented with no change to the current scedule. 
+The simulation was developed using Python and geospatial shapefile data to realistically model train movement and identify potential timetable conflicts.
