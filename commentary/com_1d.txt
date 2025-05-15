@@ -1,3 +1,7 @@
 
 
-This chart displays test train performance by arrival time in Sligo. Each bar represents a train, ordered chronologically along the x-axis. The full height of the bar shows the total runtime in minutes, while the lighter segment indicates the portion of that runtime classified as delay.
+This chart shows the performance of simulated morning test trains, grouped by their arrival time in Sligo and arranged chronologically from left to right. Each bar represents one test train. The total height of the bar reflects the full journey time from departure to arrival, while the lighter section indicates time spent stationary due to enforced delays while waiting to pass another train.
+
+The chart reveals four distinct crossing windows, each allowing one feasible arrival into Sligo within the target period. In each group, multiple trains depart at different times but arrive together, as earlier departures are forced to wait at passing stations. This results in longer total runtimes without gaining any advantage in arrival time.
+
+The final train in each group, shown with the shortest bar and no waiting time, represents the optimised service. These are timed precisely to avoid conflicts, though they leave no margin for delay or recovery once in motion.
