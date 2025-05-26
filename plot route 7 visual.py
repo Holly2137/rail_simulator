@@ -30,11 +30,11 @@ stations.plot(ax=ax, color='red', markersize=50, zorder=3, label="Stations")
 
 # Add labels to stations
 for _, row in stations.iterrows():
-    ax.text(row.geometry.x + 2000, row.geometry.y + 4000, row["StopName"], fontsize=12, ha='left', color='darkslategray')
+    ax.text(row.geometry.x + 2000, row.geometry.y + 4000, row["StopName"], fontsize=12, weight='bold', ha='left', color='darkslategray')
 
 ctx.add_basemap(ax, source=ctx.providers.CartoDB.Positron)
 
-ax.set_title("Route 7: Sligo to Dublin (Connolly)", fontsize=16, pad=20)
+ax.set_title("Route 7: Sligo to Dublin (Connolly)", fontsize=16, weight='bold', pad=20)
 ax.axis('off')
 ax.legend(loc="lower left")
 
