@@ -108,7 +108,7 @@ else:
 
     # Footer
     st.markdown("---")
-    st.caption("🚉 Created by: Holly Briere-Edney, Built with Streamlit")
+    st.caption("🚉 Created by: Holly Briere-Edney,Shapefile © Heritage Studies Research Group, ATU Galway City (2023) CC BY-NC-SA 4.0, Built with Streamlit")
     
     
     
