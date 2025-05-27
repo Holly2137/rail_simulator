@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
+import matplotlib.font_manager as fm
+plt.rcParams['font.family'] = 'Segoe UI Emoji' 
 
 # Define base directory- script location
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -56,6 +58,8 @@ manual_offsets = {
 
 # --- PLOTTING TRAIN GRAPH ---
 fig, ax = plt.subplots(figsize=(14, 8))
+fig.patch.set_facecolor('#eaeaea')     # slightly darker grey
+ax.set_facecolor('#e9edf2')            # soft off-white with warm tone
 
 # Group by train ID
 grouped = timetable_df.groupby("ID")
@@ -65,13 +69,21 @@ for train_id, group in grouped:
     # colour = "red" if str(train_id).startswith("T") else "black"
 
     train_id_str = str(train_id)
+    # if train_id_str.startswith("TA"):
+    #     colour = "red"
+    # elif train_id_str.startswith("T"):
+    #     colour = "darkgoldenrod"
+    # else:
+    #     colour = "black"
     if train_id_str.startswith("TA"):
         colour = "red"
-    elif train_id_str.startswith("T"):
-        colour = "darkgoldenrod"
+        linewidth = 3.5
+    elif train_id_str.startswith("TE") or train_id_str.startswith("T"):
+        colour = "limegreen"
+        linewidth = 3.5
     else:
         colour = "black"
-
+        linewidth = 1.0
 
     for i in range(1, len(group)):
         prev_row = group.iloc[i - 1]
@@ -126,12 +138,13 @@ for label, tick in zip(station_labels, station_ticks):
     offset = manual_offsets.get(label, 0)
     ax2.text(ax.get_xlim()[1] + 0.1, tick + offset, f"{station_to_km[label]:.1f} km", ha='left', va='center', fontsize=8)
 
-ax2.set_ylabel("Distance (km from Dublin)")
-ax.set_xlabel("Time of Day (hrs)")
-ax.set_ylabel("Station")
-ax.set_title("Route 7 Operational and Test Services (Stringline Diagram)")
+ax2.set_ylabel("Distance (km from Dublin)", fontsize=15)
+ax.set_xlabel("Time of Day (hrs)", fontsize=15)
+ax.set_ylabel("Station", fontsize=15)
+ax.set_title("🚆 Route 7 Operational and Test Services 🚆 (Stringline Diagram)", fontsize=20)
 ax.yaxis.set_label_coords(-0.09, 0.5)     # Pushes "Station" to the left
 ax2.yaxis.set_label_coords(1.07, 0.5)    # Pushes "Distance (km from Dublin)" further right
 ax.grid(True)
 plt.tight_layout()
 plt.show()
+

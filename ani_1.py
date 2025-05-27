@@ -502,7 +502,7 @@ ctx.add_basemap(ax, source=ctx.providers.CartoDB.Positron)
 
 #speed slider
 ax_slider = plt.axes([0.3, 0.01, 0.04, 0.02])
-speed_slider = Slider(ax_slider, 'Speed Factor', valmin=1, valmax=10, valinit=7, valstep=1)
+speed_slider = Slider(ax_slider, 'Speed Factor', valmin=1, valmax=10, valinit=5, valstep=1)
 
 clock_text = ax.text(0.5, 0.95, "Time: 00:00", transform=ax.transAxes, ha='center', fontsize=12, bbox=dict(facecolor='white', alpha=0.7))
 
@@ -510,7 +510,7 @@ clock_text = ax.text(0.5, 0.95, "Time: 00:00", transform=ax.transAxes, ha='cente
 is_paused = False
 
 # Add pause button
-ax_pause = plt.axes([0.4, 0.01, 0.4, 0.02])  # [left, bottom, width, height]
+ax_pause = plt.axes([0.4, 0.01, 0.1, 0.02])  # [left, bottom, width, height]
 pause_button = Button(ax_pause, 'Pause', color='aqua', hovercolor='red')
 
 # Pause button callback
@@ -553,7 +553,7 @@ for train_id in train_ids:
     #     marker_shape = '^'
     #     marker_size = 9
             
-    marker_size = 9 if is_test_train else 6
+    marker_size = 10 if is_test_train else 6
     marker_shape = '^' if is_test_train else 'o'
     label_color = 'darkred' if is_test_train else 'dimgray'
 
@@ -587,9 +587,9 @@ end_time = timetable_df["Departs_s"].max() + 1000
 
 
 
-start_time = 6 * 3600 + 20 * 60  # 07:30:00 in seconds
+start_time = 5 * 3600 + 20 * 60  # 07:30:00 in seconds
 FRAME_STEP = 5                  # 1 second of sim time per frame
-FRAMES = 280                    # 10 seconds * 30 fps
+FRAMES = 2490                    # 10 seconds * 30 fps
 INTERVAL = 33                   # ~30 fps (1000 ms / 30 fps ≈ 33 ms)
 
 sim_time = start_time
@@ -699,7 +699,7 @@ plt.legend()
 #plt.show()
 
 writer = FFMpegWriter(fps=30)
-ani.save(os.path.join(ANIMATIONS_DIR, "Ani_presentation7.mp4"), writer=writer)
+ani.save(os.path.join(ANIMATIONS_DIR, "Ani_new1.mp4"), writer=writer)
 print("🎬 Saving animation to Ani_presentation.mp4...")
 
 
