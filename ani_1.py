@@ -649,6 +649,7 @@ def animate_trains(frame):
             label.set_visible(False)
             continue
 
+
         t_depart = departs[idx]
         t_arrive_next = arrivals[idx + 1]
         t_depart_next = departs[idx + 1]
